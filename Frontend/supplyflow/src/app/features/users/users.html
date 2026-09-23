@@ -1,0 +1,884 @@
+<div class="mx-auto w-full max-w-7xl px-1 sm:px-2">
+
+  <!-- Header -->
+  <div class="mb-6 sm:mb-8">
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+
+      <div>
+        <div class="mb-2 flex items-center gap-2 text-xs font-medium text-slate-500">
+          <span>Settings</span>
+          <span class="text-slate-300">/</span>
+          <span class="text-blue-600">Users</span>
+        </div>
+
+        <h1 class="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
+          User Management
+        </h1>
+
+        <p class="mt-1.5 max-w-2xl text-sm leading-6 text-slate-500">
+          Manage system users and assign their roles.
+        </p>
+      </div>
+
+      <button
+        type="button"
+        (click)="openAddForm()"
+        class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 hover:shadow-md focus:outline-none focus:ring-4 focus:ring-blue-100 sm:w-auto">
+
+        <svg
+          class="h-4 w-4"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24">
+
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M12 4v16m8-8H4" />
+
+        </svg>
+
+        Add User
+
+      </button>
+
+    </div>
+  </div>
+
+
+  <!-- Messages -->
+  <div class="mb-6 space-y-3">
+
+    @if (errorMessage) {
+
+      <div
+        class="flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3.5 text-sm text-red-700 shadow-sm">
+
+        <div
+          class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-red-100 text-red-600">
+
+          <svg
+            class="h-4 w-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24">
+
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 9v4m0 4h.01M10.29 3.86l-8.1 14a2 2 0 001.71 3.14h16.2a2 2 0 001.71 3.14h-16.2a2 2 0 001.71-3.14l8.1-14a2 2 0 013.42 0z" />
+
+          </svg>
+
+        </div>
+
+        <div>
+          <p class="font-semibold">
+            Something went wrong
+          </p>
+
+          <p class="mt-0.5 text-xs text-red-600">
+            {{ errorMessage }}
+          </p>
+        </div>
+
+      </div>
+
+    }
+
+
+    @if (successMessage) {
+
+      <div
+        class="flex items-start gap-3 rounded-xl border border-green-200 bg-green-50 px-4 py-3.5 text-sm text-green-700 shadow-sm">
+
+        <div
+          class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-green-100 text-green-600">
+
+          <svg
+            class="h-4 w-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24">
+
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M5 13l4 4L19 7" />
+
+          </svg>
+
+        </div>
+
+        <div>
+          <p class="font-semibold">
+            Success
+          </p>
+
+          <p class="mt-0.5 text-xs text-green-600">
+            {{ successMessage }}
+          </p>
+        </div>
+
+      </div>
+
+    }
+
+  </div>
+
+
+  <!-- Add / Edit Form -->
+  @if (showForm) {
+
+    <div
+      class="mb-6 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+
+      <!-- Form Header -->
+      <div
+        class="border-b border-slate-200 bg-gradient-to-r from-slate-50 to-white px-5 py-5 sm:px-7">
+
+        <div class="flex items-start justify-between gap-4">
+
+          <div class="flex items-start gap-4">
+
+            <div
+              class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
+
+              <svg
+                class="h-6 w-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24">
+
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="1.8"
+                  d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2m9-8a4 4 0 100-8 4 4 0 000 8zm7-5v6m3-3h-6" />
+
+              </svg>
+
+            </div>
+
+            <div>
+
+              <h2 class="text-lg font-semibold text-slate-900">
+
+                @if (isEditMode) {
+                  Edit User
+                } @else {
+                  Add New User
+                }
+
+              </h2>
+
+              <p class="mt-1 text-sm text-slate-500">
+
+                @if (isEditMode) {
+                  Update user details and role.
+                } @else {
+                  Create a new user account.
+                }
+
+              </p>
+
+            </div>
+
+          </div>
+
+
+          <button
+            type="button"
+            (click)="closeForm()"
+            [disabled]="isSaving"
+            aria-label="Close"
+            class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 disabled:opacity-50">
+
+            <svg
+              class="h-5 w-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24">
+
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12" />
+
+            </svg>
+
+          </button>
+
+        </div>
+
+      </div>
+
+
+      <!-- Form -->
+      <form
+        [formGroup]="userForm"
+        (ngSubmit)="onSubmit()"
+        class="p-5 sm:p-7">
+
+        <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
+
+          <!-- Full Name -->
+          <div>
+
+            <label
+              for="fullName"
+              class="mb-2 block text-sm font-medium text-slate-700">
+
+              Full Name
+              <span class="text-red-500">*</span>
+
+            </label>
+
+            <input
+              id="fullName"
+              type="text"
+              formControlName="fullName"
+              placeholder="Enter full name"
+              autocomplete="name"
+              class="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-50" />
+
+            @if (fullName.invalid && fullName.touched) {
+
+              <div class="mt-2">
+
+                @if (fullName.errors?.['required']) {
+                  <p class="text-xs font-medium text-red-500">
+                    Full name is required.
+                  </p>
+                }
+
+                @if (fullName.errors?.['maxlength']) {
+                  <p class="text-xs font-medium text-red-500">
+                    Full name must not exceed 150 characters.
+                  </p>
+                }
+
+              </div>
+
+            }
+
+          </div>
+
+
+          <!-- Email -->
+          <div>
+
+            <label
+              for="email"
+              class="mb-2 block text-sm font-medium text-slate-700">
+
+              Email
+              <span class="text-red-500">*</span>
+
+            </label>
+
+            <input
+              id="email"
+              type="email"
+              formControlName="email"
+              placeholder="user@example.com"
+              autocomplete="email"
+              class="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 disabled:cursor-not-allowed disabled:bg-slate-100" />
+
+            @if (isEditMode) {
+              <p class="mt-1.5 text-xs text-slate-400">
+                Email cannot be changed.
+              </p>
+            }
+
+            @if (email.invalid && email.touched) {
+
+              <div class="mt-2">
+
+                @if (email.errors?.['required']) {
+                  <p class="text-xs font-medium text-red-500">
+                    Email is required.
+                  </p>
+                }
+
+                @if (email.errors?.['email']) {
+                  <p class="text-xs font-medium text-red-500">
+                    Please enter a valid email address.
+                  </p>
+                }
+
+              </div>
+
+            }
+
+          </div>
+
+
+          <!-- Password -->
+          @if (!isEditMode) {
+
+            <div>
+
+              <label
+                for="password"
+                class="mb-2 block text-sm font-medium text-slate-700">
+
+                Password
+                <span class="text-red-500">*</span>
+
+              </label>
+
+              <input
+                id="password"
+                type="password"
+                formControlName="password"
+                placeholder="Minimum 6 characters"
+                autocomplete="new-password"
+                class="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-50" />
+
+              @if (password.invalid && password.touched) {
+
+                <div class="mt-2">
+
+                  @if (password.errors?.['required']) {
+                    <p class="text-xs font-medium text-red-500">
+                      Password is required.
+                    </p>
+                  }
+
+                  @if (password.errors?.['minlength']) {
+                    <p class="text-xs font-medium text-red-500">
+                      Password must contain at least 6 characters.
+                    </p>
+                  }
+
+                </div>
+
+              }
+
+            </div>
+
+          }
+
+
+          <!-- Phone -->
+          <div>
+
+            <label
+              for="phone"
+              class="mb-2 block text-sm font-medium text-slate-700">
+
+              Phone Number
+
+            </label>
+
+            <input
+              id="phone"
+              type="text"
+              formControlName="phone"
+              placeholder="Enter phone number"
+              autocomplete="tel"
+              class="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-50" />
+
+          </div>
+
+
+          <!-- Role -->
+          <div>
+
+            <label
+              for="roleId"
+              class="mb-2 block text-sm font-medium text-slate-700">
+
+              Role
+              <span class="text-red-500">*</span>
+
+            </label>
+
+            <select
+              id="roleId"
+              formControlName="roleId"
+              [disabled]="isLoadingRoles"
+              class="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-50 disabled:cursor-not-allowed disabled:bg-slate-100">
+
+              <option [value]="0">
+
+                @if (isLoadingRoles) {
+                  Loading roles...
+                } @else {
+                  Select Role
+                }
+
+              </option>
+
+              @for (role of roles; track role.id) {
+
+                <option [value]="role.id">
+                  {{ role.name }}
+                </option>
+
+              }
+
+            </select>
+
+            @if (roleId.invalid && roleId.touched) {
+              <p class="mt-2 text-xs font-medium text-red-500">
+                Please select a role.
+              </p>
+            }
+
+          </div>
+
+
+          <!-- Active Status -->
+          @if (isEditMode) {
+
+            <div class="md:col-span-2">
+
+              <div
+                class="rounded-xl border border-slate-200 bg-slate-50 p-4 sm:p-5">
+
+                <label class="flex cursor-pointer items-start gap-3">
+
+                  <input
+                    type="checkbox"
+                    formControlName="isActive"
+                    class="mt-0.5 h-5 w-5 shrink-0 rounded border-slate-300 text-blue-600 focus:ring-blue-500" />
+
+                  <div>
+
+                    <p class="text-sm font-semibold text-slate-800">
+                      Active User
+                    </p>
+
+                    <p class="mt-1 text-xs leading-5 text-slate-500">
+                      Disable this user to prevent system access.
+                    </p>
+
+                  </div>
+
+                </label>
+
+              </div>
+
+            </div>
+
+          }
+
+        </div>
+
+
+        <!-- Actions -->
+        <div
+          class="mt-7 flex flex-col-reverse gap-3 border-t border-slate-200 pt-6 sm:flex-row sm:justify-end">
+
+          <button
+            type="button"
+            (click)="closeForm()"
+            [disabled]="isSaving"
+            class="w-full rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto">
+
+            Cancel
+
+          </button>
+
+
+          <button
+            type="submit"
+            [disabled]="isSaving || isLoadingRoles"
+            class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto">
+
+            @if (isSaving) {
+
+              <svg
+                class="h-4 w-4 animate-spin"
+                fill="none"
+                viewBox="0 0 24 24">
+
+                <circle
+                  class="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  stroke-width="4">
+                </circle>
+
+                <path
+                  class="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z">
+                </path>
+
+              </svg>
+
+              Saving...
+
+            } @else if (isEditMode) {
+
+              <svg
+                class="h-4 w-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24">
+
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M5 13l4 4L19 7" />
+
+              </svg>
+
+              Update User
+
+            } @else {
+
+              <svg
+                class="h-4 w-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24">
+
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 4v16m8-8H4" />
+
+              </svg>
+
+              Create User
+
+            }
+
+          </button>
+
+        </div>
+
+      </form>
+
+    </div>
+
+  }
+
+
+  <!-- Loading -->
+  @if (isLoading) {
+
+    <div
+      class="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm sm:p-12">
+
+      <div class="flex flex-col items-center justify-center text-center">
+
+        <div
+          class="mb-4 h-10 w-10 animate-spin rounded-full border-4 border-slate-200 border-t-blue-600">
+        </div>
+
+        <p class="text-sm font-medium text-slate-700">
+          Loading users...
+        </p>
+
+        <p class="mt-1 text-xs text-slate-400">
+          Please wait while we fetch the system users.
+        </p>
+
+      </div>
+
+    </div>
+
+  }
+
+
+  <!-- Users Table -->
+  @if (!isLoading) {
+
+    <div
+      class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+
+      <!-- Table Header -->
+      <div
+        class="border-b border-slate-200 bg-gradient-to-r from-slate-50 to-white px-5 py-5 sm:px-7">
+
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+
+          <div>
+
+            <h2 class="text-lg font-semibold text-slate-900">
+              Users
+            </h2>
+
+            <p class="mt-1 text-sm text-slate-500">
+              {{ users.length }} user(s) available.
+            </p>
+
+          </div>
+
+          <div
+            class="flex w-fit items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5">
+
+            <span class="h-2 w-2 rounded-full bg-blue-500"></span>
+
+            <span class="text-xs font-medium text-slate-600">
+              User Access
+            </span>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <!-- Empty State -->
+      @if (users.length === 0) {
+
+        <div class="px-5 py-12 text-center sm:px-7">
+
+          <div
+            class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-400">
+
+            <svg
+              class="h-7 w-7"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24">
+
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="1.6"
+                d="M17 20h5v-2a4 4 0 00-4-4h-1m-4 6H3v-2a4 4 0 014-4h4a4 4 0 014 4v2zm-2-10a4 4 0 11-8 0 4 4 0 018 0zm8 0a3 3 0 11-6 0 3 3 0 016 0z" />
+
+            </svg>
+
+          </div>
+
+          <h3 class="mt-4 text-sm font-semibold text-slate-800">
+            No users found
+          </h3>
+
+          <p class="mt-1 text-xs text-slate-500">
+            Create your first user to start managing system access.
+          </p>
+
+          <button
+            type="button"
+            (click)="openAddForm()"
+            class="mt-5 inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700">
+
+            <svg
+              class="h-4 w-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24">
+
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 4v16m8-8H4" />
+
+            </svg>
+
+            Create First User
+
+          </button>
+
+        </div>
+
+      }
+
+
+      <!-- Table -->
+      @if (users.length > 0) {
+
+        <div class="overflow-x-auto">
+
+          <table class="w-full min-w-[1050px] text-left text-sm">
+
+            <thead
+              class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+
+              <tr>
+
+                <th class="whitespace-nowrap px-5 py-4 font-semibold sm:px-6">
+                  User
+                </th>
+
+                <th class="whitespace-nowrap px-5 py-4 font-semibold sm:px-6">
+                  Email
+                </th>
+
+                <th class="whitespace-nowrap px-5 py-4 font-semibold sm:px-6">
+                  Phone
+                </th>
+
+                <th class="whitespace-nowrap px-5 py-4 font-semibold sm:px-6">
+                  Role
+                </th>
+
+                <th class="whitespace-nowrap px-5 py-4 font-semibold sm:px-6">
+                  Status
+                </th>
+
+                <th class="whitespace-nowrap px-5 py-4 text-right font-semibold sm:px-6">
+                  Actions
+                </th>
+
+              </tr>
+
+            </thead>
+
+
+            <tbody class="divide-y divide-slate-200">
+
+              @for (user of users; track user.id) {
+
+                <tr class="transition hover:bg-slate-50">
+
+                  <!-- User -->
+                  <td class="px-5 py-4 sm:px-6">
+
+                    <div class="flex items-center gap-3">
+
+                      <div
+                        class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-sm font-bold text-blue-600">
+
+                        {{ user.fullName.charAt(0).toUpperCase() }}
+
+                      </div>
+
+                      <div class="min-w-0">
+
+                        <p class="truncate font-semibold text-slate-900">
+                          {{ user.fullName }}
+                        </p>
+
+                        <p class="mt-0.5 text-xs text-slate-400">
+                          User #{{ user.id }}
+                        </p>
+
+                      </div>
+
+                    </div>
+
+                  </td>
+
+
+                  <!-- Email -->
+                  <td class="px-5 py-4 text-slate-600 sm:px-6">
+                    {{ user.email }}
+                  </td>
+
+
+                  <!-- Phone -->
+                  <td class="px-5 py-4 text-slate-600 sm:px-6">
+
+                    @if (user.phone) {
+
+                      {{ user.phone }}
+
+                    } @else {
+
+                      <span class="text-slate-400">
+                        —
+                      </span>
+
+                    }
+
+                  </td>
+
+
+                  <!-- Role -->
+                  <td class="px-5 py-4 sm:px-6">
+
+                    <span
+                      class="inline-flex items-center rounded-full bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700">
+
+                      {{ user.roleName }}
+
+                    </span>
+
+                  </td>
+
+
+                  <!-- Status -->
+                  <td class="px-5 py-4 sm:px-6">
+
+                    @if (user.isActive) {
+
+                      <span
+                        class="inline-flex items-center gap-2 rounded-full bg-green-100 px-3 py-1.5 text-xs font-semibold text-green-700">
+
+                        <span class="h-1.5 w-1.5 rounded-full bg-green-500"></span>
+
+                        Active
+
+                      </span>
+
+                    } @else {
+
+                      <span
+                        class="inline-flex items-center gap-2 rounded-full bg-red-100 px-3 py-1.5 text-xs font-semibold text-red-700">
+
+                        <span class="h-1.5 w-1.5 rounded-full bg-red-500"></span>
+
+                        Inactive
+
+                      </span>
+
+                    }
+
+                  </td>
+
+
+                  <!-- Actions -->
+                  <td class="px-5 py-4 text-right sm:px-6">
+
+                    <button
+                      type="button"
+                      (click)="openEditForm(user)"
+                      class="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2 text-xs font-semibold text-slate-700 shadow-sm transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700">
+
+                      <svg
+                        class="h-3.5 w-3.5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24">
+
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.5-8.5a2.121 2.121 0 113 3L12 15l-4 1 1-4 8.5-8.5z" />
+
+                      </svg>
+
+                      Edit
+
+                    </button>
+
+                  </td>
+
+                </tr>
+
+              }
+
+            </tbody>
+
+          </table>
+
+        </div>
+
+      }
+
+    </div>
+
+  }
+
+</div>

@@ -1,0 +1,681 @@
+<div class="space-y-6">
+
+  <!-- ================= HEADER ================= -->
+  <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+
+    <div>
+      <div class="mb-1 flex items-center gap-2 text-sm text-slate-500">
+        <span>Master Data</span>
+        <span>/</span>
+        <span class="font-medium text-slate-700">Suppliers</span>
+      </div>
+
+      <h1 class="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
+        Suppliers
+      </h1>
+
+      <p class="mt-1 text-sm text-slate-500 sm:text-base">
+        Manage your company suppliers.
+      </p>
+    </div>
+
+    <button
+      type="button"
+      (click)="openAddForm()"
+      class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 hover:shadow-md sm:w-auto">
+
+      <span class="text-lg leading-none">+</span>
+      <span>Add Supplier</span>
+
+    </button>
+
+  </div>
+
+
+  <!-- ================= ERROR ================= -->
+  @if (errorMessage) {
+
+    <div
+      class="flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 p-4 text-red-700 shadow-sm">
+
+      <div class="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-red-100 text-sm font-bold">
+        !
+      </div>
+
+      <div class="min-w-0">
+        <p class="text-sm font-semibold">
+          Something went wrong
+        </p>
+
+        <p class="mt-0.5 text-sm text-red-600">
+          {{ errorMessage }}
+        </p>
+      </div>
+
+    </div>
+
+  }
+
+
+  <!-- ================= LOADING ================= -->
+  @if (isLoading) {
+
+    <div
+      class="rounded-2xl border border-slate-200 bg-white p-10 text-center shadow-sm">
+
+      <div class="mx-auto mb-4 h-9 w-9 animate-spin rounded-full border-4 border-slate-200 border-t-blue-600"></div>
+
+      <p class="text-sm font-medium text-slate-600">
+        Loading suppliers...
+      </p>
+
+      <p class="mt-1 text-xs text-slate-400">
+        Please wait while supplier data is loading.
+      </p>
+
+    </div>
+
+  }
+
+
+  <!-- ================= TABLE ================= -->
+  @if (!isLoading) {
+
+    <div
+      class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+
+      <!-- Table Header -->
+      <div
+        class="flex flex-col gap-2 border-b border-slate-200 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+
+        <div>
+          <h2 class="text-base font-semibold text-slate-900">
+            Supplier List
+          </h2>
+
+          <p class="mt-0.5 text-xs text-slate-500">
+            View and manage all suppliers.
+          </p>
+        </div>
+
+        <div
+          class="inline-flex w-fit items-center rounded-full bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-600">
+
+          {{ suppliers.length }} Supplier{{ suppliers.length === 1 ? '' : 's' }}
+
+        </div>
+
+      </div>
+
+
+      <!-- Responsive Table -->
+      <div class="overflow-x-auto">
+
+        <table class="w-full min-w-[1050px]">
+
+          <thead class="border-b border-slate-200 bg-slate-50">
+
+            <tr class="text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+
+              <th class="px-5 py-4 sm:px-6">
+                Supplier
+              </th>
+
+              <th class="px-5 py-4 sm:px-6">
+                Contact Person
+              </th>
+
+              <th class="px-5 py-4 sm:px-6">
+                Email
+              </th>
+
+              <th class="px-5 py-4 sm:px-6">
+                Phone
+              </th>
+
+              <th class="px-5 py-4 sm:px-6">
+                GST Number
+              </th>
+
+              <th class="px-5 py-4 sm:px-6">
+                Status
+              </th>
+
+              <th class="px-5 py-4 text-right sm:px-6">
+                Actions
+              </th>
+
+            </tr>
+
+          </thead>
+
+
+          <tbody class="divide-y divide-slate-100">
+
+            @for (
+              supplier of suppliers;
+              track supplier.id
+            ) {
+
+              <tr
+                class="group transition hover:bg-slate-50">
+
+                <!-- Supplier -->
+                <td class="px-5 py-4 sm:px-6">
+
+                  <div class="flex items-center gap-3">
+
+                    <div
+                      class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-sm font-bold text-blue-700">
+
+                      {{ supplier.name.charAt(0).toUpperCase() }}
+
+                    </div>
+
+                    <div class="min-w-0">
+
+                      <p
+                        class="truncate text-sm font-semibold text-slate-900">
+
+                        {{ supplier.name }}
+
+                      </p>
+
+                      <p class="mt-0.5 text-xs text-slate-400">
+                        Supplier #{{ supplier.id }}
+                      </p>
+
+                    </div>
+
+                  </div>
+
+                </td>
+
+
+                <!-- Contact -->
+                <td class="px-5 py-4 text-sm text-slate-600 sm:px-6">
+
+                  <span class="font-medium text-slate-700">
+                    {{ supplier.contactPerson }}
+                  </span>
+
+                </td>
+
+
+                <!-- Email -->
+                <td class="px-5 py-4 text-sm text-slate-600 sm:px-6">
+
+                  @if (supplier.email) {
+
+                    <span>
+                      {{ supplier.email }}
+                    </span>
+
+                  } @else {
+
+                    <span class="text-slate-400">
+                      -
+                    </span>
+
+                  }
+
+                </td>
+
+
+                <!-- Phone -->
+                <td class="px-5 py-4 text-sm text-slate-600 sm:px-6">
+
+                  @if (supplier.phone) {
+
+                    <span>
+                      {{ supplier.phone }}
+                    </span>
+
+                  } @else {
+
+                    <span class="text-slate-400">
+                      -
+                    </span>
+
+                  }
+
+                </td>
+
+
+                <!-- GST -->
+                <td class="px-5 py-4 text-sm text-slate-600 sm:px-6">
+
+                  @if (supplier.gstNumber) {
+
+                    <span
+                      class="rounded-md bg-slate-100 px-2.5 py-1 font-mono text-xs font-medium text-slate-700">
+
+                      {{ supplier.gstNumber }}
+
+                    </span>
+
+                  } @else {
+
+                    <span class="text-slate-400">
+                      -
+                    </span>
+
+                  }
+
+                </td>
+
+
+                <!-- Status -->
+                <td class="px-5 py-4 sm:px-6">
+
+                  @if (supplier.isActive) {
+
+                    <span
+                      class="inline-flex items-center gap-1.5 rounded-full bg-green-50 px-3 py-1.5 text-xs font-semibold text-green-700">
+
+                      <span class="h-1.5 w-1.5 rounded-full bg-green-500"></span>
+
+                      Active
+
+                    </span>
+
+                  } @else {
+
+                    <span
+                      class="inline-flex items-center gap-1.5 rounded-full bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700">
+
+                      <span class="h-1.5 w-1.5 rounded-full bg-red-500"></span>
+
+                      Inactive
+
+                    </span>
+
+                  }
+
+                </td>
+
+
+                <!-- Action -->
+                <td class="px-5 py-4 text-right sm:px-6">
+
+                  <button
+                    type="button"
+                    (click)="openEditForm(supplier)"
+                    class="inline-flex items-center justify-center rounded-lg bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-700 transition hover:bg-blue-100">
+
+                    Edit
+
+                  </button>
+
+                </td>
+
+              </tr>
+
+            } @empty {
+
+              <tr>
+
+                <td
+                  colspan="7"
+                  class="px-6 py-14 text-center">
+
+                  <div class="mx-auto flex max-w-sm flex-col items-center">
+
+                    <div
+                      class="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-2xl text-slate-400">
+
+                      👥
+
+                    </div>
+
+                    <h3 class="text-sm font-semibold text-slate-900">
+                      No suppliers found
+                    </h3>
+
+                    <p class="mt-1 text-sm text-slate-500">
+                      Add your first supplier to get started.
+                    </p>
+
+                    <button
+                      type="button"
+                      (click)="openAddForm()"
+                      class="mt-4 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700">
+
+                      + Add Supplier
+
+                    </button>
+
+                  </div>
+
+                </td>
+
+              </tr>
+
+            }
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+    </div>
+
+  }
+
+
+  <!-- ================= ADD / EDIT MODAL ================= -->
+  @if (showForm) {
+
+    <div
+      class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-3 backdrop-blur-sm sm:p-5">
+
+      <div
+        class="flex max-h-[94vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
+
+        <!-- Modal Header -->
+        <div
+          class="flex items-center justify-between border-b border-slate-200 px-5 py-4 sm:px-6 sm:py-5">
+
+          <div>
+
+            <div class="flex items-center gap-3">
+
+              <div
+                class="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
+
+                {{ selectedSupplier ? '✎' : '+' }}
+
+              </div>
+
+              <div>
+
+                <h2 class="text-lg font-bold text-slate-900 sm:text-xl">
+
+                  @if (selectedSupplier) {
+                    Edit Supplier
+                  } @else {
+                    Add Supplier
+                  }
+
+                </h2>
+
+                <p class="mt-0.5 text-xs text-slate-500 sm:text-sm">
+
+                  @if (selectedSupplier) {
+                    Update supplier information.
+                  } @else {
+                    Add a new supplier to your company.
+                  }
+
+                </p>
+
+              </div>
+
+            </div>
+
+          </div>
+
+
+          <button
+            type="button"
+            (click)="closeForm()"
+            class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-xl text-slate-400 transition hover:bg-slate-100 hover:text-slate-700">
+
+            ×
+
+          </button>
+
+        </div>
+
+
+        <!-- Modal Body -->
+        <div class="overflow-y-auto px-5 py-5 sm:px-6 sm:py-6">
+
+          <form
+            [formGroup]="supplierForm"
+            (ngSubmit)="onSubmit()"
+            class="space-y-5">
+
+
+            <!-- Supplier Name -->
+            <div>
+
+              <label
+                class="mb-2 block text-sm font-semibold text-slate-700">
+
+                Supplier Name *
+
+              </label>
+
+              <input
+                type="text"
+                formControlName="name"
+                placeholder="Enter supplier name"
+                class="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100">
+
+              @if (
+                supplierForm.controls.name.touched &&
+                supplierForm.controls.name.invalid
+              ) {
+
+                <p class="mt-1.5 text-xs font-medium text-red-500">
+                  Supplier name is required.
+                </p>
+
+              }
+
+            </div>
+
+
+            <!-- Contact Person -->
+            <div>
+
+              <label
+                class="mb-2 block text-sm font-semibold text-slate-700">
+
+                Contact Person *
+
+              </label>
+
+              <input
+                type="text"
+                formControlName="contactPerson"
+                placeholder="Enter contact person name"
+                class="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100">
+
+              @if (
+                supplierForm.controls.contactPerson.touched &&
+                supplierForm.controls.contactPerson.invalid
+              ) {
+
+                <p class="mt-1.5 text-xs font-medium text-red-500">
+                  Contact person is required.
+                </p>
+
+              }
+
+            </div>
+
+
+            <!-- Email + Phone -->
+            <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
+
+              <!-- Email -->
+              <div>
+
+                <label
+                  class="mb-2 block text-sm font-semibold text-slate-700">
+
+                  Email
+
+                </label>
+
+                <input
+                  type="email"
+                  formControlName="email"
+                  placeholder="supplier@example.com"
+                  class="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100">
+
+                @if (
+                  supplierForm.controls.email.touched &&
+                  supplierForm.controls.email.invalid
+                ) {
+
+                  <p class="mt-1.5 text-xs font-medium text-red-500">
+                    Enter a valid email address.
+                  </p>
+
+                }
+
+              </div>
+
+
+              <!-- Phone -->
+              <div>
+
+                <label
+                  class="mb-2 block text-sm font-semibold text-slate-700">
+
+                  Phone Number
+
+                </label>
+
+                <input
+                  type="text"
+                  formControlName="phone"
+                  placeholder="Enter phone number"
+                  class="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100">
+
+              </div>
+
+            </div>
+
+
+            <!-- GST -->
+            <div>
+
+              <label
+                class="mb-2 block text-sm font-semibold text-slate-700">
+
+                GST Number
+
+              </label>
+
+              <input
+                type="text"
+                formControlName="gstNumber"
+                placeholder="Enter GST number"
+                class="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm uppercase text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100">
+
+            </div>
+
+
+            <!-- Address -->
+            <div>
+
+              <label
+                class="mb-2 block text-sm font-semibold text-slate-700">
+
+                Address
+
+              </label>
+
+              <textarea
+                rows="3"
+                formControlName="address"
+                placeholder="Enter supplier address"
+                class="w-full resize-none rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"></textarea>
+
+            </div>
+
+
+            <!-- Active Status -->
+            @if (selectedSupplier) {
+
+              <div
+                class="rounded-xl border border-slate-200 bg-slate-50 p-4">
+
+                <label class="flex cursor-pointer items-center gap-3">
+
+                  <input
+                    id="isActive"
+                    type="checkbox"
+                    formControlName="isActive"
+                    class="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500">
+
+                  <span>
+
+                    <span class="block text-sm font-semibold text-slate-700">
+                      Active Supplier
+                    </span>
+
+                    <span class="block text-xs text-slate-500">
+                      Allow this supplier to remain active.
+                    </span>
+
+                  </span>
+
+                </label>
+
+              </div>
+
+            }
+
+
+            <!-- Buttons -->
+            <div
+              class="flex flex-col-reverse gap-3 border-t border-slate-200 pt-5 sm:flex-row sm:justify-end">
+
+              <button
+                type="button"
+                (click)="closeForm()"
+                class="w-full rounded-xl border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 sm:w-auto">
+
+                Cancel
+
+              </button>
+
+
+              <button
+                type="submit"
+                [disabled]="isSubmitting"
+                class="w-full rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto">
+
+                @if (isSubmitting) {
+
+                  <span class="flex items-center justify-center gap-2">
+
+                    <span
+                      class="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white">
+                    </span>
+
+                    Saving...
+
+                  </span>
+
+                } @else if (selectedSupplier) {
+
+                  Update Supplier
+
+                } @else {
+
+                  Save Supplier
+
+                }
+
+              </button>
+
+            </div>
+
+          </form>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  }
+
+</div>

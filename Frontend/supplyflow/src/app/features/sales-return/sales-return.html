@@ -1,0 +1,554 @@
+<div class="min-h-screen bg-slate-50 p-4 md:p-6 lg:p-8">
+  <!-- HEADER -->
+  <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <div>
+      <h1 class="text-2xl font-bold text-slate-900">Sales Return</h1>
+
+      <p class="mt-1 text-sm text-slate-500">Create and manage customer product returns</p>
+    </div>
+
+    <button
+      type="button"
+      (click)="resetForm()"
+      class="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50"
+    >
+      Reset
+    </button>
+  </div>
+
+  <!-- LOADING -->
+  <div
+    *ngIf="isLoading"
+    class="mb-6 rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm"
+  >
+    <div
+      class="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-slate-200 border-t-slate-800"
+    ></div>
+
+    <p class="mt-3 text-sm text-slate-500">Loading invoices...</p>
+  </div>
+
+  <!-- ERROR -->
+  <div
+    *ngIf="errorMessage"
+    class="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+  >
+    {{ errorMessage }}
+  </div>
+
+  <!-- SUCCESS -->
+  <div
+    *ngIf="successMessage"
+    class="mb-6 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700"
+  >
+    {{ successMessage }}
+  </div>
+
+  <!-- SUCCESS RETURN CARD -->
+  <div
+    *ngIf="createdReturn"
+    class="mb-6 overflow-hidden rounded-2xl border border-emerald-200 bg-white shadow-sm"
+  >
+    <div class="border-b border-emerald-100 bg-emerald-50 px-5 py-4">
+      <div class="flex items-center gap-3">
+        <div
+          class="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 text-emerald-600"
+        >
+          ✓
+        </div>
+
+        <div>
+          <h2 class="font-semibold text-emerald-900">Sales Return Created</h2>
+
+          <p class="text-sm text-emerald-700">Return has been successfully processed.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid gap-4 p-5 sm:grid-cols-2 lg:grid-cols-4">
+      <div>
+        <p class="text-xs font-medium uppercase text-slate-400">Return Number</p>
+
+        <p class="mt-1 font-semibold text-slate-900">
+          {{ createdReturn.returnNumber }}
+        </p>
+      </div>
+
+      <div>
+        <p class="text-xs font-medium uppercase text-slate-400">Invoice</p>
+
+        <p class="mt-1 font-semibold text-slate-900">
+          {{ createdReturn.invoiceNumber }}
+        </p>
+      </div>
+
+      <div>
+        <p class="text-xs font-medium uppercase text-slate-400">Status</p>
+
+        <span
+          class="mt-1 inline-flex rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700"
+        >
+          {{ createdReturn.status }}
+        </span>
+      </div>
+
+      <div>
+        <p class="text-xs font-medium uppercase text-slate-400">Return Amount</p>
+
+        <p class="mt-1 text-lg font-bold text-slate-900">
+          ₹{{ createdReturn.grandTotal | number: '1.2-2' }}
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN FORM -->
+  <div *ngIf="!isLoading" class="space-y-6">
+    <!-- INVOICE SECTION -->
+    <section class="rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <div class="border-b border-slate-100 px-5 py-4 md:px-6">
+        <h2 class="text-base font-semibold text-slate-900">Return Information</h2>
+
+        <p class="mt-1 text-sm text-slate-500">
+          Select the invoice from which products are being returned.
+        </p>
+      </div>
+
+      <div class="grid gap-5 p-5 md:grid-cols-3 md:p-6">
+        <!-- INVOICE -->
+        <div class="md:col-span-1">
+          <label class="mb-2 block text-sm font-medium text-slate-700">
+            Invoice
+            <span class="text-red-500">*</span>
+          </label>
+
+          <select
+            [(ngModel)]="saleId"
+            (ngModelChange)="onSaleChange()"
+            class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
+          >
+            <option [ngValue]="null">Select invoice</option>
+
+            <option *ngFor="let sale of sales" [ngValue]="sale.id">
+              {{ sale.invoiceNumber }}
+              — ₹{{ sale.grandTotal | number: '1.2-2' }}
+            </option>
+          </select>
+        </div>
+
+        <!-- CUSTOMER -->
+        <div>
+          <label class="mb-2 block text-sm font-medium text-slate-700"> Customer </label>
+
+          <div class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+            <p class="text-sm font-semibold text-slate-800">
+              {{ selectedSale?.customerId ? 'Customer #' + selectedSale?.customerId : '—' }}
+            </p>
+          </div>
+        </div>
+
+        <!-- WAREHOUSE -->
+        <div>
+          <label class="mb-2 block text-sm font-medium text-slate-700"> Warehouse </label>
+
+          <div class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+            <p class="text-sm font-semibold text-slate-800">
+              {{ selectedSale?.warehouseName || '—' }}
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SALE DETAILS -->
+    <section *ngIf="selectedSale" class="rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <div
+        class="flex flex-col gap-3 border-b border-slate-100 px-5 py-4 sm:flex-row sm:items-center sm:justify-between md:px-6"
+      >
+        <div>
+          <h2 class="text-base font-semibold text-slate-900">Products</h2>
+
+          <p class="mt-1 text-sm text-slate-500">
+            Select products and enter the quantity to return.
+          </p>
+        </div>
+
+        <div class="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-600">
+          {{ selectedItemCount }} selected
+        </div>
+      </div>
+
+      <!-- DESKTOP TABLE -->
+      <div class="hidden overflow-x-auto md:block">
+        <table class="w-full min-w-[900px] text-left">
+          <thead class="bg-slate-50">
+            <tr class="border-b border-slate-100">
+              <th class="px-5 py-3 text-xs font-semibold uppercase tracking-wider text-slate-500">
+                Return
+              </th>
+
+              <th class="px-5 py-3 text-xs font-semibold uppercase tracking-wider text-slate-500">
+                Product
+              </th>
+
+              <th class="px-5 py-3 text-xs font-semibold uppercase tracking-wider text-slate-500">
+                Sold
+              </th>
+
+              <th class="px-5 py-3 text-xs font-semibold uppercase tracking-wider text-slate-500">
+                Available
+              </th>
+
+              <th class="px-5 py-3 text-xs font-semibold uppercase tracking-wider text-slate-500">
+                Return Qty
+              </th>
+
+              <th class="px-5 py-3 text-xs font-semibold uppercase tracking-wider text-slate-500">
+                Unit Price
+              </th>
+
+              <th class="px-5 py-3 text-xs font-semibold uppercase tracking-wider text-slate-500">
+                Discount
+              </th>
+
+              <th class="px-5 py-3 text-xs font-semibold uppercase tracking-wider text-slate-500">
+                Tax %
+              </th>
+
+              <th
+                class="px-5 py-3 text-right text-xs font-semibold uppercase tracking-wider text-slate-500"
+              >
+                Total
+              </th>
+            </tr>
+          </thead>
+
+          <tbody class="divide-y divide-slate-100">
+            <tr
+              *ngFor="let item of selectedItems"
+              class="transition hover:bg-slate-50"
+              [class.bg-slate-50]="item.selected"
+            >
+              <!-- CHECKBOX -->
+              <td class="px-5 py-4">
+                <input
+                  type="checkbox"
+                  [checked]="item.selected"
+                  (change)="toggleItem(item)"
+                  class="h-4 w-4 rounded border-slate-300 text-slate-800 focus:ring-slate-500"
+                />
+              </td>
+
+              <!-- PRODUCT -->
+              <td class="px-5 py-4">
+                <p class="text-sm font-semibold text-slate-800">
+                  {{ item.productName }}
+                </p>
+
+                <p class="mt-0.5 text-xs text-slate-400">SKU: {{ item.sku }}</p>
+              </td>
+
+              <!-- SOLD -->
+              <td class="px-5 py-4 text-sm text-slate-600">
+                {{ item.soldQuantity }}
+              </td>
+
+              <!-- AVAILABLE -->
+              <td class="px-5 py-4">
+                <span
+                  class="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700"
+                >
+                  {{ item.remainingQuantity }}
+                </span>
+              </td>
+
+              <!-- RETURN QTY -->
+              <td class="px-5 py-4">
+                <input
+                  type="number"
+                  min="0"
+                  [max]="item.remainingQuantity"
+                  [(ngModel)]="item.quantity"
+                  [ngModelOptions]="{ standalone: true }"
+                  (ngModelChange)="onQuantityChange(item)"
+                  [disabled]="!item.selected"
+                  class="w-24 rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-slate-500 focus:ring-2 focus:ring-slate-200 disabled:bg-slate-100 disabled:text-slate-400"
+                />
+              </td>
+
+              <!-- PRICE -->
+              <td class="px-5 py-4">
+                <input
+                  type="number"
+                  min="0"
+                  [(ngModel)]="item.unitPrice"
+                  [ngModelOptions]="{ standalone: true }"
+                  (ngModelChange)="onItemValueChange(item)"
+                  [disabled]="!item.selected"
+                  class="w-28 rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-slate-500 focus:ring-2 focus:ring-slate-200 disabled:bg-slate-100"
+                />
+              </td>
+
+              <!-- DISCOUNT -->
+              <td class="px-5 py-4">
+                <input
+                  type="number"
+                  min="0"
+                  [(ngModel)]="item.discount"
+                  [ngModelOptions]="{ standalone: true }"
+                  (ngModelChange)="onItemValueChange(item)"
+                  [disabled]="!item.selected"
+                  class="w-24 rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-slate-500 focus:ring-2 focus:ring-slate-200 disabled:bg-slate-100"
+                />
+              </td>
+
+              <!-- TAX -->
+              <td class="px-5 py-4">
+                <input
+                  type="number"
+                  min="0"
+                  [(ngModel)]="item.tax"
+                  [ngModelOptions]="{ standalone: true }"
+                  (ngModelChange)="onItemValueChange(item)"
+                  [disabled]="!item.selected"
+                  class="w-20 rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-slate-500 focus:ring-2 focus:ring-slate-200 disabled:bg-slate-100"
+                />
+              </td>
+
+              <!-- TOTAL -->
+              <td class="px-5 py-4 text-right">
+                <span class="text-sm font-bold text-slate-900">
+                  ₹{{ item.total | number: '1.2-2' }}
+                </span>
+              </td>
+            </tr>
+
+            <!-- EMPTY -->
+            <tr *ngIf="selectedItems.length === 0">
+              <td colspan="9" class="px-5 py-12 text-center">
+                <p class="text-sm font-medium text-slate-600">No products available</p>
+
+                <p class="mt-1 text-xs text-slate-400">Select another invoice.</p>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- MOBILE CARDS -->
+      <div class="space-y-4 p-4 md:hidden">
+        <div
+          *ngFor="let item of selectedItems"
+          class="rounded-2xl border border-slate-200 p-4"
+          [class.border-slate-400]="item.selected"
+        >
+          <div class="flex items-start justify-between gap-3">
+            <div class="flex gap-3">
+              <input
+                type="checkbox"
+                [checked]="item.selected"
+                (change)="toggleItem(item)"
+                class="mt-1 h-4 w-4 rounded border-slate-300"
+              />
+
+              <div>
+                <p class="text-sm font-semibold text-slate-800">
+                  {{ item.productName }}
+                </p>
+
+                <p class="text-xs text-slate-400">SKU: {{ item.sku }}</p>
+              </div>
+            </div>
+
+            <span class="text-sm font-bold text-slate-900">
+              ₹{{ item.total | number: '1.2-2' }}
+            </span>
+          </div>
+
+          <div class="mt-4 grid grid-cols-2 gap-3">
+            <div>
+              <p class="text-xs text-slate-400">Sold</p>
+
+              <p class="mt-1 text-sm font-semibold">
+                {{ item.soldQuantity }}
+              </p>
+            </div>
+
+            <div>
+              <p class="text-xs text-slate-400">Available</p>
+
+              <p class="mt-1 text-sm font-semibold text-blue-600">
+                {{ item.remainingQuantity }}
+              </p>
+            </div>
+          </div>
+
+          <div class="mt-4 grid grid-cols-2 gap-3">
+            <div>
+              <label class="text-xs font-medium text-slate-500"> Return Qty </label>
+
+              <input
+                type="number"
+                min="0"
+                [max]="item.remainingQuantity"
+                [(ngModel)]="item.quantity"
+                [ngModelOptions]="{ standalone: true }"
+                (ngModelChange)="onQuantityChange(item)"
+                [disabled]="!item.selected"
+                class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm disabled:bg-slate-100"
+              />
+            </div>
+
+            <div>
+              <label class="text-xs font-medium text-slate-500"> Unit Price </label>
+
+              <input
+                type="number"
+                min="0"
+                [(ngModel)]="item.unitPrice"
+                [ngModelOptions]="{ standalone: true }"
+                (ngModelChange)="onItemValueChange(item)"
+                [disabled]="!item.selected"
+                class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm disabled:bg-slate-100"
+              />
+            </div>
+
+            <div>
+              <label class="text-xs font-medium text-slate-500"> Discount </label>
+
+              <input
+                type="number"
+                min="0"
+                [(ngModel)]="item.discount"
+                [ngModelOptions]="{ standalone: true }"
+                (ngModelChange)="onItemValueChange(item)"
+                [disabled]="!item.selected"
+                class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm disabled:bg-slate-100"
+              />
+            </div>
+
+            <div>
+              <label class="text-xs font-medium text-slate-500"> Tax % </label>
+
+              <input
+                type="number"
+                min="0"
+                [(ngModel)]="item.tax"
+                [ngModelOptions]="{ standalone: true }"
+                (ngModelChange)="onItemValueChange(item)"
+                [disabled]="!item.selected"
+                class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm disabled:bg-slate-100"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TOTAL + REMARKS -->
+    <section class="grid gap-6 lg:grid-cols-3">
+      <!-- REMARKS -->
+      <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm lg:col-span-2 md:p-6">
+        <h2 class="text-base font-semibold text-slate-900">Remarks</h2>
+
+        <textarea
+          [(ngModel)]="remarks"
+          [ngModelOptions]="{ standalone: true }"
+          rows="5"
+          placeholder="Enter return reason or additional notes..."
+          class="mt-4 w-full resize-none rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
+        ></textarea>
+      </div>
+
+      <!-- SUMMARY -->
+      <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm md:p-6">
+        <h2 class="text-base font-semibold text-slate-900">Return Summary</h2>
+
+        <div class="mt-5 space-y-3">
+          <div class="flex justify-between text-sm">
+            <span class="text-slate-500"> Subtotal </span>
+
+            <span class="font-medium text-slate-800"> ₹{{ subTotal | number: '1.2-2' }} </span>
+          </div>
+
+          <div class="flex justify-between text-sm">
+            <span class="text-slate-500"> Item Discount </span>
+
+            <span class="font-medium text-slate-800"> ₹{{ totalDiscount | number: '1.2-2' }} </span>
+          </div>
+
+          <div>
+            <label class="text-sm text-slate-500"> Overall Discount </label>
+
+            <input
+              type="number"
+              min="0"
+              [(ngModel)]="discount"
+              [ngModelOptions]="{ standalone: true }"
+              (ngModelChange)="onFormValueChange()"
+              class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
+            />
+          </div>
+
+          <div class="flex justify-between text-sm">
+            <span class="text-slate-500"> Item Tax </span>
+
+            <span class="font-medium text-slate-800"> ₹{{ totalTax | number: '1.2-2' }} </span>
+          </div>
+
+          <div>
+            <label class="text-sm text-slate-500"> Overall Tax % </label>
+
+            <input
+              type="number"
+              min="0"
+              [(ngModel)]="tax"
+              [ngModelOptions]="{ standalone: true }"
+              (ngModelChange)="onFormValueChange()"
+              class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
+            />
+          </div>
+
+          <div class="my-4 border-t border-slate-100"></div>
+
+          <div class="flex items-end justify-between">
+            <div>
+              <p class="text-sm font-medium text-slate-500">Grand Total</p>
+
+              <p class="mt-1 text-xs text-slate-400">Refund amount</p>
+            </div>
+
+            <p class="text-2xl font-bold text-slate-900">₹{{ grandTotal | number: '1.2-2' }}</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ACTION -->
+    <div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+      <button
+        type="button"
+        (click)="resetForm()"
+        class="rounded-xl border border-slate-200 bg-white px-6 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50"
+      >
+        Cancel
+      </button>
+
+      <button
+        type="button"
+        (click)="createReturn()"
+        [disabled]="!canSubmit || isSaving"
+        class="inline-flex items-center justify-center gap-2 rounded-xl bg-slate-900 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
+      >
+        <span
+          *ngIf="isSaving"
+          class="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white"
+        ></span>
+
+        <span>
+          {{ isSaving ? 'Processing Return...' : 'Create Sales Return' }}
+        </span>
+      </button>
+    </div>
+  </div>
+</div>

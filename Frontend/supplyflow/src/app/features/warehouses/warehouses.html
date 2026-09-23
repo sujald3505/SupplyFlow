@@ -1,0 +1,720 @@
+<div class="space-y-6">
+
+  <!-- =========================
+       PAGE HEADER
+  ========================== -->
+  <div
+    class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+
+    <div>
+      <div class="mb-2 flex items-center gap-2">
+        <span class="h-2 w-2 rounded-full bg-blue-600"></span>
+
+        <span
+          class="text-xs font-semibold uppercase tracking-wider text-blue-600">
+          Inventory
+        </span>
+      </div>
+
+      <h1
+        class="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
+        Warehouses
+      </h1>
+
+      <p class="mt-2 text-sm text-slate-500 sm:text-base">
+        Manage your company warehouses and storage locations.
+      </p>
+    </div>
+
+    <button
+      type="button"
+      (click)="openAddForm()"
+      class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 hover:shadow-md sm:w-auto">
+
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        class="h-5 w-5"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+        stroke-width="2">
+
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          d="M12 4v16m8-8H4" />
+
+      </svg>
+
+      Add Warehouse
+
+    </button>
+
+  </div>
+
+
+  <!-- =========================
+       ERROR
+  ========================== -->
+  @if (errorMessage) {
+
+    <div
+      class="rounded-2xl border border-red-200 bg-red-50 p-4 text-red-700 shadow-sm">
+
+      <div class="flex items-start gap-3">
+
+        <div
+          class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-red-100">
+
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-5 w-5"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            stroke-width="2">
+
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M12 9v3.75m0 3.75h.007M10.29 3.86l-7.1 12.28A1.5 1.5 0 004.49 18.4h15.02a1.5 1.5 0 001.3-2.26L13.71 3.86a1.98 1.98 0 00-3.42 0z" />
+
+          </svg>
+
+        </div>
+
+        <div class="min-w-0">
+
+          <p class="text-sm font-semibold">
+            Something went wrong
+          </p>
+
+          <p class="mt-1 text-sm text-red-600">
+            {{ errorMessage }}
+          </p>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  }
+
+
+  <!-- =========================
+       LOADING
+  ========================== -->
+  @if (isLoading) {
+
+    <div
+      class="rounded-2xl border border-slate-200 bg-white p-12 text-center shadow-sm">
+
+      <div
+        class="mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-4 border-slate-200 border-t-blue-600">
+      </div>
+
+      <p class="text-sm font-medium text-slate-500">
+        Loading warehouses...
+      </p>
+
+    </div>
+
+  }
+
+
+  <!-- =========================
+       WAREHOUSE TABLE
+  ========================== -->
+  @if (!isLoading) {
+
+    <div
+      class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+
+      <!-- Table Header -->
+      <div
+        class="flex flex-col gap-2 border-b border-slate-200 px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+
+        <div>
+          <h2 class="text-lg font-semibold text-slate-900">
+            Warehouse Directory
+          </h2>
+
+          <p class="mt-1 text-xs text-slate-500">
+            Manage your available storage locations
+          </p>
+        </div>
+
+        <span
+          class="w-fit rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
+
+          {{ warehouses.length }} Warehouses
+
+        </span>
+
+      </div>
+
+
+      <!-- Responsive Table -->
+      <div class="overflow-x-auto">
+
+        <table class="min-w-[1000px] w-full">
+
+          <thead class="bg-slate-50">
+
+            <tr
+              class="border-b border-slate-200 text-left text-xs uppercase tracking-wider text-slate-500">
+
+              <th class="px-5 py-4 font-semibold sm:px-6">
+                Warehouse
+              </th>
+
+              <th class="px-5 py-4 font-semibold sm:px-6">
+                Code
+              </th>
+
+              <th class="px-5 py-4 font-semibold sm:px-6">
+                Address
+              </th>
+
+              <th class="px-5 py-4 font-semibold sm:px-6">
+                Contact Person
+              </th>
+
+              <th class="px-5 py-4 font-semibold sm:px-6">
+                Phone
+              </th>
+
+              <th class="px-5 py-4 font-semibold sm:px-6">
+                Status
+              </th>
+
+              <th
+                class="px-5 py-4 text-right font-semibold sm:px-6">
+                Actions
+              </th>
+
+            </tr>
+
+          </thead>
+
+
+          <tbody class="divide-y divide-slate-100">
+
+            @for (
+              warehouse of warehouses;
+              track warehouse.id
+            ) {
+
+              <tr
+                class="group transition hover:bg-slate-50">
+
+                <!-- Warehouse -->
+                <td class="px-5 py-4 sm:px-6">
+
+                  <div class="flex items-center gap-3">
+
+                    <div
+                      class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-sm font-bold text-blue-600">
+
+                      {{ warehouse.name.charAt(0).toUpperCase() }}
+
+                    </div>
+
+                    <div class="min-w-0">
+
+                      <p
+                        class="max-w-xs truncate text-sm font-semibold text-slate-900">
+
+                        {{ warehouse.name }}
+
+                      </p>
+
+                      <p class="mt-1 text-xs text-slate-400">
+                        Storage Location
+                      </p>
+
+                    </div>
+
+                  </div>
+
+                </td>
+
+
+                <!-- Code -->
+                <td class="px-5 py-4 sm:px-6">
+
+                  @if (warehouse.code) {
+
+                    <span
+                      class="rounded-lg bg-slate-100 px-2.5 py-1 font-mono text-xs font-medium text-slate-600">
+
+                      {{ warehouse.code }}
+
+                    </span>
+
+                  } @else {
+
+                    <span class="text-sm text-slate-400">
+                      —
+                    </span>
+
+                  }
+
+                </td>
+
+
+                <!-- Address -->
+                <td class="px-5 py-4 sm:px-6">
+
+                  <p
+                    class="max-w-xs truncate text-sm text-slate-600">
+
+                    {{ warehouse.address || '—' }}
+
+                  </p>
+
+                </td>
+
+
+                <!-- Contact Person -->
+                <td
+                  class="px-5 py-4 text-sm text-slate-600 sm:px-6">
+
+                  {{ warehouse.contactPerson || '—' }}
+
+                </td>
+
+
+                <!-- Phone -->
+                <td
+                  class="px-5 py-4 text-sm text-slate-600 sm:px-6">
+
+                  {{ warehouse.phone || '—' }}
+
+                </td>
+
+
+                <!-- Status -->
+                <td class="px-5 py-4 sm:px-6">
+
+                  @if (warehouse.isActive) {
+
+                    <span
+                      class="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+
+                      <span
+                        class="h-1.5 w-1.5 rounded-full bg-emerald-500">
+                      </span>
+
+                      Active
+
+                    </span>
+
+                  } @else {
+
+                    <span
+                      class="inline-flex items-center gap-1.5 rounded-full bg-red-50 px-3 py-1 text-xs font-semibold text-red-700">
+
+                      <span
+                        class="h-1.5 w-1.5 rounded-full bg-red-500">
+                      </span>
+
+                      Inactive
+
+                    </span>
+
+                  }
+
+                </td>
+
+
+                <!-- Action -->
+                <td
+                  class="px-5 py-4 text-right sm:px-6">
+
+                  <button
+                    type="button"
+                    (click)="openEditForm(warehouse)"
+                    class="inline-flex items-center gap-2 rounded-lg bg-blue-50 px-3.5 py-2 text-sm font-semibold text-blue-700 transition hover:bg-blue-100">
+
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      class="h-4 w-4"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      stroke-width="2">
+
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.5-8.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 8.5-8.5z" />
+
+                    </svg>
+
+                    Edit
+
+                  </button>
+
+                </td>
+
+              </tr>
+
+            } @empty {
+
+              <tr>
+
+                <td
+                  colspan="7"
+                  class="px-6 py-14 text-center">
+
+                  <div
+                    class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100">
+
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      class="h-7 w-7 text-slate-400"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      stroke-width="2">
+
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M3 21h18M4 18h16V9l-8-5-8 5v9zm4 0v-6h3v6m3 0v-6h3v6" />
+
+                    </svg>
+
+                  </div>
+
+                  <p
+                    class="mt-4 text-sm font-semibold text-slate-600">
+
+                    No warehouses found
+
+                  </p>
+
+                  <p
+                    class="mt-1 text-xs text-slate-400">
+
+                    Add your first warehouse to get started.
+
+                  </p>
+
+                </td>
+
+              </tr>
+
+            }
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+    </div>
+
+  }
+
+
+  <!-- =========================
+       ADD / EDIT MODAL
+  ========================== -->
+  @if (showForm) {
+
+    <div
+      class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-3 backdrop-blur-sm sm:p-5">
+
+      <div
+        class="flex max-h-[94vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
+
+        <!-- Modal Header -->
+        <div
+          class="flex shrink-0 items-center justify-between border-b border-slate-200 px-5 py-4 sm:px-6 sm:py-5">
+
+          <div class="flex min-w-0 items-center gap-3">
+
+            <div
+              class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
+
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-5 w-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                stroke-width="2">
+
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M3 21h18M4 18h16V9l-8-5-8 5v9zm4 0v-6h3v6m3 0v-6h3v6" />
+
+              </svg>
+
+            </div>
+
+            <div class="min-w-0">
+
+              <h2
+                class="truncate text-lg font-semibold text-slate-900 sm:text-xl">
+
+                @if (selectedWarehouse) {
+                  Edit Warehouse
+                } @else {
+                  Add Warehouse
+                }
+
+              </h2>
+
+              <p
+                class="mt-0.5 hidden text-xs text-slate-500 sm:block">
+
+                Configure warehouse and contact details.
+
+              </p>
+
+            </div>
+
+          </div>
+
+
+          <button
+            type="button"
+            (click)="closeForm()"
+            class="ml-3 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-xl text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+            aria-label="Close">
+
+            ×
+
+          </button>
+
+        </div>
+
+
+        <!-- Modal Body -->
+        <div class="overflow-y-auto">
+
+          <form
+            [formGroup]="warehouseForm"
+            (ngSubmit)="onSubmit()"
+            class="space-y-5 p-5 sm:p-6">
+
+
+            <!-- Warehouse Name + Code -->
+            <div
+              class="grid grid-cols-1 gap-5 sm:grid-cols-2">
+
+              <!-- Name -->
+              <div>
+
+                <label
+                  class="mb-2 block text-sm font-semibold text-slate-700">
+
+                  Warehouse Name *
+
+                </label>
+
+                <input
+                  type="text"
+                  formControlName="name"
+                  placeholder="Enter warehouse name"
+                  class="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-50">
+
+                @if (
+                  warehouseForm.controls.name.touched &&
+                  warehouseForm.controls.name.invalid
+                ) {
+
+                  <p
+                    class="mt-1.5 text-xs font-medium text-red-500">
+
+                    Warehouse name is required.
+
+                  </p>
+
+                }
+
+              </div>
+
+
+              <!-- Code -->
+              <div>
+
+                <label
+                  class="mb-2 block text-sm font-semibold text-slate-700">
+
+                  Warehouse Code
+
+                </label>
+
+                <input
+                  type="text"
+                  formControlName="code"
+                  placeholder="Example: WH-AHM-01"
+                  class="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm uppercase outline-none transition placeholder:normal-case placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-50">
+
+              </div>
+
+            </div>
+
+
+            <!-- Address -->
+            <div>
+
+              <label
+                class="mb-2 block text-sm font-semibold text-slate-700">
+
+                Address
+
+              </label>
+
+              <textarea
+                rows="3"
+                formControlName="address"
+                placeholder="Enter warehouse address"
+                class="w-full resize-none rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-50">
+              </textarea>
+
+            </div>
+
+
+            <!-- Contact + Phone -->
+            <div
+              class="grid grid-cols-1 gap-5 sm:grid-cols-2">
+
+              <!-- Contact Person -->
+              <div>
+
+                <label
+                  class="mb-2 block text-sm font-semibold text-slate-700">
+
+                  Contact Person
+
+                </label>
+
+                <input
+                  type="text"
+                  formControlName="contactPerson"
+                  placeholder="Enter contact person name"
+                  class="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-50">
+
+              </div>
+
+
+              <!-- Phone -->
+              <div>
+
+                <label
+                  class="mb-2 block text-sm font-semibold text-slate-700">
+
+                  Phone Number
+
+                </label>
+
+                <input
+                  type="text"
+                  formControlName="phone"
+                  placeholder="Enter phone number"
+                  class="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-50">
+
+              </div>
+
+            </div>
+
+
+            <!-- Active Status -->
+            @if (selectedWarehouse) {
+
+              <div
+                class="rounded-xl border border-slate-200 bg-slate-50 p-4">
+
+                <label
+                  class="flex cursor-pointer items-center gap-3">
+
+                  <input
+                    id="isActive"
+                    type="checkbox"
+                    formControlName="isActive"
+                    class="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500">
+
+                  <div>
+
+                    <p
+                      class="text-sm font-semibold text-slate-700">
+
+                      Active Warehouse
+
+                    </p>
+
+                    <p
+                      class="text-xs text-slate-500">
+
+                      Keep this warehouse active in the system.
+
+                    </p>
+
+                  </div>
+
+                </label>
+
+              </div>
+
+            }
+
+
+            <!-- Buttons -->
+            <div
+              class="flex flex-col-reverse gap-3 border-t border-slate-200 pt-5 sm:flex-row sm:justify-end">
+
+              <button
+                type="button"
+                (click)="closeForm()"
+                class="w-full rounded-xl border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 sm:w-auto">
+
+                Cancel
+
+              </button>
+
+
+              <button
+                type="submit"
+                [disabled]="isSubmitting"
+                class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto">
+
+                @if (isSubmitting) {
+
+                  <span
+                    class="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white">
+                  </span>
+
+                  Saving...
+
+                } @else if (selectedWarehouse) {
+
+                  Update Warehouse
+
+                } @else {
+
+                  Save Warehouse
+
+                }
+
+              </button>
+
+            </div>
+
+          </form>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  }
+
+</div>

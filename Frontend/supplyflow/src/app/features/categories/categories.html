@@ -1,0 +1,254 @@
+<div class="space-y-6">
+
+  <!-- Header -->
+  <div class="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+
+    <div>
+      <h1 class="text-3xl font-bold text-slate-900">
+        Categories
+      </h1>
+
+      <p class="mt-1 text-slate-500">
+        Manage product categories.
+      </p>
+    </div>
+
+    <button
+      (click)="openForm()"
+      class="rounded-lg bg-blue-600 px-5 py-3 text-sm font-medium text-white transition hover:bg-blue-700">
+
+      + Add Category
+
+    </button>
+
+  </div>
+
+
+  <!-- Error -->
+  @if (errorMessage) {
+
+    <div class="rounded-lg border border-red-200 bg-red-50 p-4 text-red-600">
+      {{ errorMessage }}
+    </div>
+
+  }
+
+
+  <!-- Loading -->
+  @if (isLoading) {
+
+    <div class="rounded-xl bg-white p-10 text-center shadow-sm ring-1 ring-slate-200">
+      <p class="text-slate-500">
+        Loading categories...
+      </p>
+    </div>
+
+  }
+
+
+  <!-- Table -->
+  @if (!isLoading) {
+
+    <div class="overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-slate-200">
+
+      <div class="overflow-x-auto">
+
+        <table class="w-full">
+
+          <thead class="bg-slate-50">
+
+            <tr class="text-left text-xs uppercase text-slate-500">
+
+              <th class="px-6 py-4">
+                Name
+              </th>
+
+              <th class="px-6 py-4">
+                Description
+              </th>
+
+              <th class="px-6 py-4">
+                Status
+              </th>
+
+            </tr>
+
+          </thead>
+
+
+          <tbody class="divide-y divide-slate-100">
+
+            @for (
+              category of categories;
+              track category.id
+            ) {
+
+              <tr>
+
+                <td class="px-6 py-4 text-sm font-medium text-slate-900">
+                  {{ category.name }}
+                </td>
+
+                <td class="px-6 py-4 text-sm text-slate-600">
+                  {{ category.description || '-' }}
+                </td>
+
+                <td class="px-6 py-4">
+
+                  @if (category.isActive) {
+
+                    <span class="rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700">
+                      Active
+                    </span>
+
+                  } @else {
+
+                    <span class="rounded-full bg-red-100 px-3 py-1 text-xs font-medium text-red-700">
+                      Inactive
+                    </span>
+
+                  }
+
+                </td>
+
+              </tr>
+
+            } @empty {
+
+              <tr>
+
+                <td
+                  colspan="3"
+                  class="px-6 py-10 text-center text-sm text-slate-500">
+
+                  No categories found.
+
+                </td>
+
+              </tr>
+
+            }
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+    </div>
+
+  }
+
+
+  <!-- Add Category Modal -->
+  @if (showForm) {
+
+    <div
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+
+      <div class="w-full max-w-lg rounded-xl bg-white p-6 shadow-xl">
+
+        <div class="mb-6 flex items-center justify-between">
+
+          <h2 class="text-xl font-semibold text-slate-900">
+            Add Category
+          </h2>
+
+          <button
+            (click)="closeForm()"
+            class="text-xl text-slate-500 hover:text-slate-900">
+
+            ×
+
+          </button>
+
+        </div>
+
+
+        <form
+          [formGroup]="categoryForm"
+          (ngSubmit)="onSubmit()"
+          class="space-y-5">
+
+
+          <!-- Name -->
+          <div>
+
+            <label class="mb-2 block text-sm font-medium text-slate-700">
+              Category Name
+            </label>
+
+            <input
+              type="text"
+              formControlName="name"
+              placeholder="Enter category name"
+              class="w-full rounded-lg border border-slate-300 px-4 py-3 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100">
+
+            @if (
+              categoryForm.controls.name.touched &&
+              categoryForm.controls.name.invalid
+            ) {
+
+              <p class="mt-1 text-xs text-red-500">
+                Category name is required.
+              </p>
+
+            }
+
+          </div>
+
+
+          <!-- Description -->
+          <div>
+
+            <label class="mb-2 block text-sm font-medium text-slate-700">
+              Description
+            </label>
+
+            <textarea
+              rows="4"
+              formControlName="description"
+              placeholder="Enter description"
+              class="w-full rounded-lg border border-slate-300 px-4 py-3 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100">
+            </textarea>
+
+          </div>
+
+
+          <!-- Buttons -->
+          <div class="flex justify-end gap-3 pt-2">
+
+            <button
+              type="button"
+              (click)="closeForm()"
+              class="rounded-lg border border-slate-300 px-5 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50">
+
+              Cancel
+
+            </button>
+
+
+            <button
+              type="submit"
+              [disabled]="isSubmitting"
+              class="rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-60">
+
+              @if (isSubmitting) {
+                Saving...
+              } @else {
+                Save Category
+              }
+
+            </button>
+
+          </div>
+
+        </form>
+
+      </div>
+
+    </div>
+
+  }
+
+</div>

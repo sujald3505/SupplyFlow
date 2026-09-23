@@ -1,0 +1,1157 @@
+<div class="space-y-6">
+
+  <!-- HEADER -->
+  <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+
+    <div>
+      <div class="mb-2 flex items-center gap-2 text-sm font-medium text-blue-600">
+        <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50">
+          📝
+        </span>
+        Procurement
+      </div>
+
+      <h1 class="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
+        Purchase Requests
+      </h1>
+
+      <p class="mt-1 text-sm text-slate-500 sm:text-base">
+        Create and manage purchase requests.
+      </p>
+    </div>
+
+    <button
+      *ngIf="canCreateRequest()"
+      type="button"
+      (click)="openCreateModal()"
+      class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 sm:w-auto">
+
+      +
+      Create Purchase Request
+
+    </button>
+
+  </div>
+
+
+  <!-- SUCCESS -->
+  <div
+    *ngIf="successMessage"
+    class="flex items-start gap-3 rounded-xl border border-green-200 bg-green-50 p-4 text-green-700">
+
+    <div
+      class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-green-100 font-bold">
+      ✓
+    </div>
+
+    <div>
+      <p class="font-semibold">
+        Success
+      </p>
+
+      <p class="mt-1 text-sm">
+        {{ successMessage }}
+      </p>
+    </div>
+
+  </div>
+
+
+  <!-- ERROR -->
+  <div
+    *ngIf="errorMessage"
+    class="flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 p-4 text-red-700">
+
+    <div
+      class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-red-100 font-bold text-red-600">
+      !
+    </div>
+
+    <div>
+      <p class="font-semibold">
+        Something went wrong
+      </p>
+
+      <p class="mt-1 text-sm">
+        {{ errorMessage }}
+      </p>
+    </div>
+
+  </div>
+
+
+  <!-- SUMMARY -->
+  <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+
+    <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div class="flex items-center justify-between">
+
+        <div>
+          <p class="text-sm font-medium text-slate-500">
+            Total Requests
+          </p>
+
+          <p class="mt-2 text-2xl font-bold text-slate-900">
+            {{ filteredRequests.length }}
+          </p>
+        </div>
+
+        <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-xl">
+          📝
+        </div>
+
+      </div>
+    </div>
+
+
+    <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div class="flex items-center justify-between">
+
+        <div>
+          <p class="text-sm font-medium text-slate-500">
+            Draft
+          </p>
+
+          <p class="mt-2 text-2xl font-bold text-slate-700">
+            {{ filteredRequests.filter(r => r.status === 'Draft').length }}
+          </p>
+        </div>
+
+        <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-100 text-xl">
+          📄
+        </div>
+
+      </div>
+    </div>
+
+
+    <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div class="flex items-center justify-between">
+
+        <div>
+          <p class="text-sm font-medium text-slate-500">
+            Submitted
+          </p>
+
+          <p class="mt-2 text-2xl font-bold text-blue-600">
+            {{ filteredRequests.filter(r => r.status === 'Submitted').length }}
+          </p>
+        </div>
+
+        <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-xl">
+          📤
+        </div>
+
+      </div>
+    </div>
+
+
+    <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div class="flex items-center justify-between">
+
+        <div>
+          <p class="text-sm font-medium text-slate-500">
+            Approved
+          </p>
+
+          <p class="mt-2 text-2xl font-bold text-green-600">
+            {{ filteredRequests.filter(r => r.status === 'Approved').length }}
+          </p>
+        </div>
+
+        <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-green-50 text-xl">
+          ✓
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+
+  <!-- FILTERS -->
+  <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+
+    <div class="mb-5">
+      <h2 class="text-base font-semibold text-slate-900">
+        Request Filters
+      </h2>
+
+      <p class="mt-1 text-sm text-slate-500">
+        Search requests or filter them by status.
+      </p>
+    </div>
+
+
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+
+      <!-- SEARCH -->
+      <div>
+
+        <label class="mb-2 block text-sm font-semibold text-slate-700">
+          Search
+        </label>
+
+        <div class="relative">
+
+          <span
+            class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
+            🔍
+          </span>
+
+          <input
+            type="text"
+            [(ngModel)]="searchTerm"
+            (input)="applyFilters()"
+            placeholder="Request number or requester..."
+            class="w-full rounded-xl border border-slate-300 bg-slate-50 py-3 pl-11 pr-4 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-50">
+
+        </div>
+
+      </div>
+
+
+      <!-- STATUS -->
+      <div>
+
+        <label class="mb-2 block text-sm font-semibold text-slate-700">
+          Status
+        </label>
+
+        <select
+          [(ngModel)]="selectedStatus"
+          (change)="applyFilters()"
+          class="w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-50">
+
+          <option
+            *ngFor="let status of statuses"
+            [value]="status">
+
+            {{ status }}
+
+          </option>
+
+        </select>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- LOADING -->
+  <div
+    *ngIf="isLoading"
+    class="rounded-2xl border border-slate-200 bg-white p-10 text-center shadow-sm">
+
+    <div
+      class="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-slate-200 border-t-blue-600">
+    </div>
+
+    <p class="mt-4 font-semibold text-slate-800">
+      Loading purchase requests
+    </p>
+
+    <p class="mt-1 text-sm text-slate-500">
+      Fetching the latest procurement requests...
+    </p>
+
+  </div>
+
+
+  <!-- TABLE -->
+  <div
+    *ngIf="!isLoading"
+    class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+
+    <div
+      class="flex flex-col gap-2 border-b border-slate-200 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+
+      <div>
+        <h2 class="font-semibold text-slate-900">
+          Purchase Request History
+        </h2>
+
+        <p class="mt-1 text-xs text-slate-500 sm:text-sm">
+          Showing {{ filteredRequests.length }} request(s)
+        </p>
+      </div>
+
+      <span
+        class="inline-flex w-fit rounded-full bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700">
+
+        Procurement Requests
+
+      </span>
+
+    </div>
+
+
+    <div class="overflow-x-auto">
+
+      <table class="w-full min-w-[1050px] text-left text-sm">
+
+        <thead class="bg-slate-50">
+
+          <tr class="border-b border-slate-200">
+
+            <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500">
+              Request
+            </th>
+
+            <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500">
+              Requested By
+            </th>
+
+            <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500">
+              Items
+            </th>
+
+            <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500">
+              Status
+            </th>
+
+            <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500">
+              Created
+            </th>
+
+            <th class="px-6 py-4 text-right text-xs font-bold uppercase tracking-wider text-slate-500">
+              Actions
+            </th>
+
+          </tr>
+
+        </thead>
+
+
+        <tbody class="divide-y divide-slate-100">
+
+          <tr
+            *ngFor="
+              let request of filteredRequests;
+              trackBy: trackByRequestId
+            "
+            class="group transition hover:bg-slate-50">
+
+            <!-- REQUEST -->
+            <td class="px-6 py-4">
+
+              <div class="flex items-center gap-3">
+
+                <div
+                  class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 font-bold text-blue-600">
+
+                  {{ request.requestNumber.charAt(0).toUpperCase() }}
+
+                </div>
+
+                <div class="min-w-0">
+
+                  <p class="font-semibold text-slate-900">
+                    {{ request.requestNumber }}
+                  </p>
+
+                  <p
+                    *ngIf="request.remarks"
+                    class="mt-1 max-w-xs truncate text-xs text-slate-400">
+
+                    {{ request.remarks }}
+
+                  </p>
+
+                </div>
+
+              </div>
+
+            </td>
+
+
+            <!-- REQUESTED BY -->
+            <td class="px-6 py-4">
+
+              <div class="flex items-center gap-2">
+
+                <div
+                  class="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-50 text-sm font-bold text-indigo-600">
+
+                  {{ request.requestedByUserName.charAt(0).toUpperCase() }}
+
+                </div>
+
+                <span class="font-medium text-slate-700">
+                  {{ request.requestedByUserName }}
+                </span>
+
+              </div>
+
+            </td>
+
+
+            <!-- ITEMS -->
+            <td class="px-6 py-4">
+
+              <span
+                class="inline-flex rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700">
+
+                {{ request.items.length }} Items
+
+              </span>
+
+            </td>
+
+
+            <!-- STATUS -->
+            <td class="px-6 py-4">
+
+              <span
+                class="inline-flex rounded-full px-3 py-1.5 text-xs font-bold"
+                [ngClass]="getStatusClass(request.status)">
+
+                {{ request.status }}
+
+              </span>
+
+            </td>
+
+
+            <!-- CREATED -->
+            <td class="px-6 py-4 whitespace-nowrap">
+
+              <p class="font-medium text-slate-700">
+                {{ request.createdAt | date:'dd MMM yyyy' }}
+              </p>
+
+              <p class="mt-0.5 text-xs text-slate-400">
+                {{ request.createdAt | date:'hh:mm a' }}
+              </p>
+
+            </td>
+
+
+            <!-- ACTIONS -->
+            <td class="px-6 py-4">
+
+              <div class="flex justify-end gap-2">
+
+                <button
+                  type="button"
+                  (click)="openViewModal(request)"
+                  class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-100">
+
+                  View
+
+                </button>
+
+
+                <button
+                  *ngIf="isEmployee() && request.status === 'Draft'"
+                  type="button"
+                  (click)="submitRequest(request)"
+                  class="rounded-lg bg-blue-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-blue-700">
+
+                  Submit
+
+                </button>
+
+
+                <button
+                  *ngIf="canApproveRequest() && request.status === 'Submitted'"
+                  type="button"
+                  (click)="approveRequest(request)"
+                  class="rounded-lg bg-green-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-green-700">
+
+                  Approve
+
+                </button>
+
+
+                <button
+                  *ngIf="canRejectRequest() && request.status === 'Submitted'"
+                  type="button"
+                  (click)="openRejectModal(request)"
+                  class="rounded-lg bg-red-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-red-700">
+
+                  Reject
+
+                </button>
+
+              </div>
+
+            </td>
+
+          </tr>
+
+
+          <!-- EMPTY -->
+          <tr *ngIf="filteredRequests.length === 0">
+
+            <td
+              colspan="6"
+              class="px-6 py-14 text-center">
+
+              <div
+                class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-2xl">
+                📝
+              </div>
+
+              <p class="mt-4 font-semibold text-slate-800">
+                No purchase requests found
+              </p>
+
+              <p class="mt-1 text-sm text-slate-500">
+                Try changing your search or status filter.
+              </p>
+
+            </td>
+
+          </tr>
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- ===================================================== -->
+<!-- CREATE PURCHASE REQUEST MODAL -->
+<!-- ===================================================== -->
+
+<div
+  *ngIf="showCreateModal"
+  class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-3 backdrop-blur-sm sm:p-5">
+
+  <div
+    class="max-h-[95vh] w-full max-w-4xl overflow-y-auto rounded-2xl bg-white shadow-2xl">
+
+    <!-- HEADER -->
+    <div
+      class="sticky top-0 z-10 flex items-center justify-between border-b border-slate-200 bg-white px-5 py-4 sm:px-6">
+
+      <div class="flex items-center gap-3">
+
+        <div
+          class="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
+          +
+        </div>
+
+        <div>
+
+          <h2 class="text-lg font-bold text-slate-900 sm:text-xl">
+            Create Purchase Request
+          </h2>
+
+          <p class="mt-0.5 text-xs text-slate-500 sm:text-sm">
+            Add products and requested quantities.
+          </p>
+
+        </div>
+
+      </div>
+
+
+      <button
+        type="button"
+        (click)="closeCreateModal()"
+        class="flex h-9 w-9 items-center justify-center rounded-lg text-xl text-slate-400 transition hover:bg-slate-100 hover:text-slate-700">
+
+        ×
+
+      </button>
+
+    </div>
+
+
+    <!-- FORM -->
+    <form
+      [formGroup]="purchaseRequestForm"
+      (ngSubmit)="createPurchaseRequest()"
+      class="space-y-6 p-5 sm:p-6">
+
+      <!-- REMARKS -->
+      <div>
+
+        <label class="mb-2 block text-sm font-semibold text-slate-700">
+          Request Remarks
+        </label>
+
+        <textarea
+          formControlName="remarks"
+          rows="3"
+          placeholder="Enter request remarks..."
+          class="w-full resize-none rounded-xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-50">
+        </textarea>
+
+      </div>
+
+
+      <!-- ITEMS HEADER -->
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+
+        <div>
+          <h3 class="font-bold text-slate-900">
+            Request Items
+          </h3>
+
+          <p class="mt-1 text-xs text-slate-500">
+            Add one or more products to this request.
+          </p>
+        </div>
+
+        <button
+          type="button"
+          (click)="addItem()"
+          class="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-4 py-2.5 text-sm font-semibold text-blue-700 transition hover:bg-blue-100 sm:w-auto">
+
+          +
+          Add Item
+
+        </button>
+
+      </div>
+
+
+      <!-- ITEMS -->
+      <div formArrayName="items">
+
+        <div
+          *ngFor="
+            let item of items.controls;
+            let i = index;
+            trackBy: trackByItemIndex
+          "
+          [formGroupName]="i"
+          class="mb-4 rounded-2xl border border-slate-200 bg-slate-50 p-4 sm:p-5">
+
+          <div class="mb-4 flex items-center justify-between">
+
+            <span
+              class="inline-flex rounded-full bg-white px-3 py-1 text-xs font-bold text-slate-600 ring-1 ring-slate-200">
+
+              Item {{ i + 1 }}
+
+            </span>
+
+            <button
+              type="button"
+              (click)="removeItem(i)"
+              [disabled]="items.length <= 1"
+              class="rounded-lg border border-red-200 bg-white px-3 py-2 text-xs font-semibold text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-40">
+
+              Remove
+
+            </button>
+
+          </div>
+
+
+          <div class="grid grid-cols-1 gap-4 lg:grid-cols-12">
+
+            <!-- PRODUCT -->
+            <div class="lg:col-span-6">
+
+              <label class="mb-2 block text-sm font-semibold text-slate-700">
+                Product *
+              </label>
+
+              <select
+                formControlName="productId"
+                class="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-50">
+
+                <option [ngValue]="null">
+                  Select Product
+                </option>
+
+                <option
+                  *ngFor="let product of products"
+                  [value]="product.id">
+
+                  {{ product.name }} ({{ product.sku }})
+
+                </option>
+
+              </select>
+
+              <p
+                *ngIf="
+                  item.get('productId')?.invalid &&
+                  item.get('productId')?.touched
+                "
+                class="mt-1.5 text-xs font-medium text-red-500">
+
+                Product is required.
+
+              </p>
+
+            </div>
+
+
+            <!-- QUANTITY -->
+            <div class="lg:col-span-3">
+
+              <label class="mb-2 block text-sm font-semibold text-slate-700">
+                Quantity *
+              </label>
+
+              <input
+                type="number"
+                min="0.01"
+                step="0.01"
+                formControlName="requestedQuantity"
+                placeholder="0"
+                class="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-50">
+
+              <p
+                *ngIf="
+                  item.get('requestedQuantity')?.invalid &&
+                  item.get('requestedQuantity')?.touched
+                "
+                class="mt-1.5 text-xs font-medium text-red-500">
+
+                Valid quantity is required.
+
+              </p>
+
+            </div>
+
+
+            <!-- REMARKS -->
+            <div class="lg:col-span-3">
+
+              <label class="mb-2 block text-sm font-semibold text-slate-700">
+                Remarks
+              </label>
+
+              <input
+                type="text"
+                formControlName="remarks"
+                placeholder="Optional"
+                class="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-50">
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <!-- FOOTER -->
+      <div
+        class="flex flex-col-reverse gap-3 border-t border-slate-200 pt-5 sm:flex-row sm:justify-end">
+
+        <button
+          type="button"
+          (click)="closeCreateModal()"
+          class="w-full rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 sm:w-auto">
+
+          Cancel
+
+        </button>
+
+        <button
+          type="submit"
+          [disabled]="isSubmitting"
+          class="w-full rounded-xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto">
+
+          {{ isSubmitting ? 'Creating...' : 'Create Purchase Request' }}
+
+        </button>
+
+      </div>
+
+    </form>
+
+  </div>
+
+</div>
+
+
+<!-- ===================================================== -->
+<!-- VIEW MODAL -->
+<!-- ===================================================== -->
+
+<div
+  *ngIf="showViewModal && selectedRequest"
+  class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-3 backdrop-blur-sm sm:p-5">
+
+  <div
+    class="max-h-[95vh] w-full max-w-4xl overflow-y-auto rounded-2xl bg-white shadow-2xl">
+
+    <!-- HEADER -->
+    <div
+      class="sticky top-0 z-10 flex items-center justify-between border-b border-slate-200 bg-white px-5 py-4 sm:px-6">
+
+      <div>
+
+        <p class="text-xs font-semibold uppercase tracking-wider text-blue-600">
+          Purchase Request
+        </p>
+
+        <h2 class="mt-1 text-lg font-bold text-slate-900 sm:text-xl">
+          Request Details
+        </h2>
+
+        <p class="mt-0.5 text-sm text-slate-500">
+          {{ selectedRequest.requestNumber }}
+        </p>
+
+      </div>
+
+
+      <button
+        type="button"
+        (click)="closeViewModal()"
+        class="flex h-9 w-9 items-center justify-center rounded-lg text-xl text-slate-400 transition hover:bg-slate-100 hover:text-slate-700">
+
+        ×
+
+      </button>
+
+    </div>
+
+
+    <div class="p-5 sm:p-6">
+
+      <!-- DETAILS -->
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+
+        <div class="rounded-xl bg-slate-50 p-4">
+
+          <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">
+            Requested By
+          </p>
+
+          <p class="mt-2 font-semibold text-slate-800">
+            {{ selectedRequest.requestedByUserName }}
+          </p>
+
+        </div>
+
+
+        <div class="rounded-xl bg-slate-50 p-4">
+
+          <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">
+            Status
+          </p>
+
+          <span
+            class="mt-2 inline-flex rounded-full px-3 py-1.5 text-xs font-bold"
+            [ngClass]="getStatusClass(selectedRequest.status)">
+
+            {{ selectedRequest.status }}
+
+          </span>
+
+        </div>
+
+
+        <div class="rounded-xl bg-slate-50 p-4">
+
+          <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">
+            Created At
+          </p>
+
+          <p class="mt-2 font-semibold text-slate-800">
+            {{ selectedRequest.createdAt | date:'dd MMM yyyy, hh:mm a' }}
+          </p>
+
+        </div>
+
+
+        <div
+          *ngIf="selectedRequest.submittedAt"
+          class="rounded-xl bg-slate-50 p-4">
+
+          <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">
+            Submitted At
+          </p>
+
+          <p class="mt-2 font-semibold text-slate-800">
+            {{ selectedRequest.submittedAt | date:'dd MMM yyyy, hh:mm a' }}
+          </p>
+
+        </div>
+
+
+        <div
+          *ngIf="selectedRequest.approvedAt"
+          class="rounded-xl bg-slate-50 p-4">
+
+          <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">
+            Approved At
+          </p>
+
+          <p class="mt-2 font-semibold text-slate-800">
+            {{ selectedRequest.approvedAt | date:'dd MMM yyyy, hh:mm a' }}
+          </p>
+
+        </div>
+
+
+        <div
+          *ngIf="selectedRequest.approvedByUserName"
+          class="rounded-xl bg-slate-50 p-4">
+
+          <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">
+            Approved By
+          </p>
+
+          <p class="mt-2 font-semibold text-slate-800">
+            {{ selectedRequest.approvedByUserName }}
+          </p>
+
+        </div>
+
+      </div>
+
+
+      <!-- REMARKS -->
+      <div
+        *ngIf="selectedRequest.remarks"
+        class="mt-5 rounded-xl bg-slate-50 p-4">
+
+        <p class="text-sm font-semibold text-slate-700">
+          Request Remarks
+        </p>
+
+        <p class="mt-2 text-sm leading-6 text-slate-600">
+          {{ selectedRequest.remarks }}
+        </p>
+
+      </div>
+
+
+      <!-- REJECTION -->
+      <div
+        *ngIf="selectedRequest.rejectionReason"
+        class="mt-5 rounded-xl border border-red-200 bg-red-50 p-4">
+
+        <p class="text-sm font-semibold text-red-700">
+          Rejection Reason
+        </p>
+
+        <p class="mt-2 text-sm leading-6 text-red-600">
+          {{ selectedRequest.rejectionReason }}
+        </p>
+
+      </div>
+
+
+      <!-- ITEMS -->
+      <div class="mt-6">
+
+        <div class="mb-4 flex items-center justify-between">
+
+          <div>
+            <h3 class="font-bold text-slate-900">
+              Requested Items
+            </h3>
+
+            <p class="mt-1 text-xs text-slate-500">
+              {{ selectedRequest.items.length }} item(s)
+            </p>
+          </div>
+
+        </div>
+
+
+        <div class="overflow-x-auto rounded-xl border border-slate-200">
+
+          <table class="w-full min-w-[700px] text-left text-sm">
+
+            <thead class="bg-slate-50">
+
+              <tr>
+
+                <th class="px-4 py-3 text-xs font-bold uppercase text-slate-500">
+                  Product
+                </th>
+
+                <th class="px-4 py-3 text-xs font-bold uppercase text-slate-500">
+                  SKU
+                </th>
+
+                <th class="px-4 py-3 text-xs font-bold uppercase text-slate-500">
+                  Quantity
+                </th>
+
+                <th class="px-4 py-3 text-xs font-bold uppercase text-slate-500">
+                  Unit
+                </th>
+
+                <th class="px-4 py-3 text-xs font-bold uppercase text-slate-500">
+                  Remarks
+                </th>
+
+              </tr>
+
+            </thead>
+
+
+            <tbody class="divide-y divide-slate-100">
+
+              <tr *ngFor="let item of selectedRequest.items">
+
+                <td class="px-4 py-3 font-semibold text-slate-800">
+                  {{ item.productName }}
+                </td>
+
+                <td class="px-4 py-3 text-slate-600">
+                  {{ item.sku }}
+                </td>
+
+                <td class="px-4 py-3 font-semibold text-blue-700">
+                  {{ item.requestedQuantity }}
+                </td>
+
+                <td class="px-4 py-3 text-slate-600">
+                  {{ item.unitName }} ({{ item.unitSymbol }})
+                </td>
+
+                <td class="px-4 py-3 text-slate-600">
+                  {{ item.remarks || '-' }}
+                </td>
+
+              </tr>
+
+            </tbody>
+
+          </table>
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <!-- FOOTER -->
+    <div class="flex justify-end border-t border-slate-200 px-5 py-4 sm:px-6">
+
+      <button
+        type="button"
+        (click)="closeViewModal()"
+        class="w-full rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 sm:w-auto">
+
+        Close
+
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- ===================================================== -->
+<!-- REJECT MODAL -->
+<!-- ===================================================== -->
+
+<div
+  *ngIf="showRejectModal && selectedRequest"
+  class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-3 backdrop-blur-sm sm:p-5">
+
+  <div class="w-full max-w-lg overflow-hidden rounded-2xl bg-white shadow-2xl">
+
+    <!-- HEADER -->
+    <div
+      class="flex items-center justify-between border-b border-slate-200 px-5 py-4 sm:px-6">
+
+      <div>
+
+        <p class="text-xs font-semibold uppercase tracking-wider text-red-600">
+          Reject Request
+        </p>
+
+        <h2 class="mt-1 text-lg font-bold text-slate-900">
+          Reject Purchase Request
+        </h2>
+
+        <p class="mt-0.5 text-sm text-slate-500">
+          {{ selectedRequest.requestNumber }}
+        </p>
+
+      </div>
+
+
+      <button
+        type="button"
+        (click)="closeRejectModal()"
+        class="flex h-9 w-9 items-center justify-center rounded-lg text-xl text-slate-400 transition hover:bg-slate-100 hover:text-slate-700">
+
+        ×
+
+      </button>
+
+    </div>
+
+
+    <form
+      [formGroup]="rejectForm"
+      (ngSubmit)="rejectRequest()"
+      class="p-5 sm:p-6">
+
+      <div>
+
+        <label class="mb-2 block text-sm font-semibold text-slate-700">
+          Rejection Reason *
+        </label>
+
+        <textarea
+          formControlName="rejectionReason"
+          rows="5"
+          placeholder="Enter reason for rejection..."
+          class="w-full resize-none rounded-xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-red-500 focus:bg-white focus:ring-4 focus:ring-red-50">
+        </textarea>
+
+        <p
+          *ngIf="
+            rejectForm.get('rejectionReason')?.invalid &&
+            rejectForm.get('rejectionReason')?.touched
+          "
+          class="mt-1.5 text-xs font-medium text-red-500">
+
+          Rejection reason is required.
+
+        </p>
+
+      </div>
+
+
+      <!-- FOOTER -->
+      <div
+        class="mt-6 flex flex-col-reverse gap-3 border-t border-slate-100 pt-5 sm:flex-row sm:justify-end">
+
+        <button
+          type="button"
+          (click)="closeRejectModal()"
+          class="w-full rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 sm:w-auto">
+
+          Cancel
+
+        </button>
+
+        <button
+          type="submit"
+          [disabled]="isSubmitting"
+          class="w-full rounded-xl bg-red-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto">
+
+          {{ isSubmitting ? 'Rejecting...' : 'Reject Request' }}
+
+        </button>
+
+      </div>
+
+    </form>
+
+  </div>
+
+</div>

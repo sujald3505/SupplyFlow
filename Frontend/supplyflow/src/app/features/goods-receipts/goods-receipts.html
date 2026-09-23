@@ -1,0 +1,1162 @@
+<div class="min-h-full bg-slate-50 p-4 sm:p-5 lg:p-6">
+
+  <!-- ==================== HEADER ==================== -->
+  <div
+    class="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between"
+  >
+    <div>
+      <div class="mb-2 flex items-center gap-2 text-xs font-medium text-blue-600">
+        <span>Procurement</span>
+        <span class="text-slate-300">/</span>
+        <span class="text-slate-400">Goods Receipts</span>
+      </div>
+
+      <h1 class="text-2xl font-bold tracking-tight text-slate-800 sm:text-3xl">
+        Goods Receipts
+      </h1>
+
+      <p class="mt-1 text-sm text-slate-500">
+        Manage goods receipts and GRN records.
+      </p>
+    </div>
+
+    <button
+      type="button"
+      (click)="openCreateModal()"
+      class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 sm:w-auto"
+    >
+      <span class="text-lg leading-none">+</span>
+      Create Goods Receipt
+    </button>
+  </div>
+
+
+  <!-- ==================== MESSAGES ==================== -->
+  <div
+    *ngIf="successMessage"
+    class="mb-5 flex items-start justify-between gap-4 rounded-xl border border-green-200 bg-green-50 px-4 py-3.5 text-sm text-green-700 shadow-sm"
+  >
+    <div class="flex items-start gap-3">
+      <div
+        class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-green-100 text-xs font-bold text-green-700"
+      >
+        ✓
+      </div>
+
+      <span class="pt-0.5">
+        {{ successMessage }}
+      </span>
+    </div>
+
+    <button
+      type="button"
+      (click)="successMessage = ''"
+      class="text-xl leading-none text-green-500 transition hover:text-green-800"
+    >
+      ×
+    </button>
+  </div>
+
+
+  <div
+    *ngIf="errorMessage"
+    class="mb-5 flex items-start justify-between gap-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3.5 text-sm text-red-700 shadow-sm"
+  >
+    <div class="flex items-start gap-3">
+      <div
+        class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-red-100 text-xs font-bold text-red-700"
+      >
+        !
+      </div>
+
+      <span class="pt-0.5">
+        {{ errorMessage }}
+      </span>
+    </div>
+
+    <button
+      type="button"
+      (click)="errorMessage = ''"
+      class="text-xl leading-none text-red-500 transition hover:text-red-800"
+    >
+      ×
+    </button>
+  </div>
+
+
+  <!-- ==================== SUMMARY ==================== -->
+  <div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+
+    <div
+      class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+    >
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">
+            Total GRNs
+          </p>
+
+          <p class="mt-2 text-2xl font-bold text-slate-800">
+            {{ goodsReceipts.length }}
+          </p>
+        </div>
+
+        <div
+          class="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-xl"
+        >
+          📦
+        </div>
+      </div>
+    </div>
+
+
+    <div
+      class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+    >
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">
+            Draft
+          </p>
+
+          <p class="mt-2 text-2xl font-bold text-slate-800">
+            {{ goodsReceipts.filter(r => r.status === 'Draft').length }}
+          </p>
+        </div>
+
+        <div
+          class="flex h-11 w-11 items-center justify-center rounded-xl bg-yellow-50 text-xl"
+        >
+          📝
+        </div>
+      </div>
+    </div>
+
+
+    <div
+      class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+    >
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">
+            Completed
+          </p>
+
+          <p class="mt-2 text-2xl font-bold text-slate-800">
+            {{ goodsReceipts.filter(r => r.status === 'Completed').length }}
+          </p>
+        </div>
+
+        <div
+          class="flex h-11 w-11 items-center justify-center rounded-xl bg-green-50 text-xl"
+        >
+          ✓
+        </div>
+      </div>
+    </div>
+
+
+    <div
+      class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+    >
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">
+            Cancelled
+          </p>
+
+          <p class="mt-2 text-2xl font-bold text-slate-800">
+            {{ goodsReceipts.filter(r => r.status === 'Cancelled').length }}
+          </p>
+        </div>
+
+        <div
+          class="flex h-11 w-11 items-center justify-center rounded-xl bg-red-50 text-xl"
+        >
+          ×
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+
+  <!-- ==================== FILTERS ==================== -->
+  <div
+    class="mb-6 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5"
+  >
+    <div class="mb-4 flex items-center gap-2">
+      <div
+        class="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 text-sm text-blue-600"
+      >
+        🔎
+      </div>
+
+      <div>
+        <h2 class="text-sm font-semibold text-slate-800">
+          Search & Filter
+        </h2>
+
+        <p class="text-xs text-slate-400">
+          Find goods receipts quickly.
+        </p>
+      </div>
+    </div>
+
+
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+
+      <!-- Search -->
+      <div>
+        <label
+          class="mb-1.5 block text-sm font-medium text-slate-700"
+        >
+          Search
+        </label>
+
+        <div class="relative">
+          <span
+            class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+          >
+            🔍
+          </span>
+
+          <input
+            type="text"
+            [(ngModel)]="searchText"
+            (input)="onSearchChange()"
+            placeholder="Search GRN, PO, warehouse..."
+            class="w-full rounded-xl border border-slate-300 bg-slate-50 py-2.5 pl-10 pr-4 text-sm outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100"
+          />
+        </div>
+      </div>
+
+
+      <!-- Status -->
+      <div>
+        <label
+          class="mb-1.5 block text-sm font-medium text-slate-700"
+        >
+          Status
+        </label>
+
+        <select
+          [(ngModel)]="statusFilter"
+          (change)="onStatusFilterChange()"
+          class="w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-2.5 text-sm outline-none transition focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100"
+        >
+          <option value="All">
+            All Status
+          </option>
+
+          <option value="Draft">
+            Draft
+          </option>
+
+          <option value="Completed">
+            Completed
+          </option>
+
+          <option value="Cancelled">
+            Cancelled
+          </option>
+        </select>
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- ==================== LOADING ==================== -->
+  <div
+    *ngIf="isLoading"
+    class="rounded-2xl border border-slate-200 bg-white p-10 text-center shadow-sm"
+  >
+    <div
+      class="mx-auto h-9 w-9 animate-spin rounded-full border-4 border-slate-200 border-t-blue-600"
+    ></div>
+
+    <p class="mt-4 text-sm font-medium text-slate-600">
+      Loading goods receipts...
+    </p>
+
+    <p class="mt-1 text-xs text-slate-400">
+      Please wait while we fetch your GRN records.
+    </p>
+  </div>
+
+
+  <!-- ==================== TABLE ==================== -->
+  <div
+    *ngIf="!isLoading"
+    class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"
+  >
+
+    <div
+      class="flex flex-col gap-2 border-b border-slate-200 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5"
+    >
+      <div>
+        <h2 class="text-base font-semibold text-slate-800">
+          Goods Receipt Directory
+        </h2>
+
+        <p class="mt-0.5 text-xs text-slate-400">
+          {{ filteredGoodsReceipts.length }} receipt(s) found
+        </p>
+      </div>
+    </div>
+
+
+    <div class="overflow-x-auto">
+      <table class="w-full min-w-[1050px] text-left text-sm">
+
+        <thead
+          class="border-b border-slate-200 bg-slate-50 text-xs uppercase tracking-wide text-slate-500"
+        >
+          <tr>
+
+            <th class="px-5 py-4 font-semibold">
+              GRN Number
+            </th>
+
+            <th class="px-5 py-4 font-semibold">
+              Purchase Order
+            </th>
+
+            <th class="px-5 py-4 font-semibold">
+              Warehouse
+            </th>
+
+            <th class="px-5 py-4 font-semibold">
+              Received By
+            </th>
+
+            <th class="px-5 py-4 font-semibold">
+              Receipt Date
+            </th>
+
+            <th class="px-5 py-4 font-semibold">
+              Status
+            </th>
+
+            <th class="px-5 py-4 text-right font-semibold">
+              Actions
+            </th>
+
+          </tr>
+        </thead>
+
+
+        <tbody class="divide-y divide-slate-100">
+
+          <tr
+            *ngFor="let receipt of filteredGoodsReceipts"
+            class="group transition hover:bg-slate-50"
+          >
+
+            <!-- GRN -->
+            <td class="px-5 py-4">
+              <div class="flex items-center gap-3">
+
+                <div
+                  class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-xs font-bold text-blue-600"
+                >
+                  GRN
+                </div>
+
+                <div>
+                  <p class="font-semibold text-slate-800">
+                    {{ receipt.grnNumber }}
+                  </p>
+
+                  <p class="mt-0.5 text-xs text-slate-400">
+                    Goods Receipt
+                  </p>
+                </div>
+
+              </div>
+            </td>
+
+
+            <!-- PO -->
+            <td class="px-5 py-4">
+              <p class="font-medium text-slate-700">
+                {{ receipt.purchaseOrderNumber }}
+              </p>
+            </td>
+
+
+            <!-- Warehouse -->
+            <td class="px-5 py-4">
+              <p class="text-slate-600">
+                {{ receipt.warehouseName }}
+              </p>
+            </td>
+
+
+            <!-- Received By -->
+            <td class="px-5 py-4">
+              <p class="text-slate-600">
+                {{ receipt.receivedByUserName }}
+              </p>
+            </td>
+
+
+            <!-- Date -->
+            <td class="px-5 py-4">
+              <p class="text-slate-600">
+                {{ receipt.receiptDate | date:'dd MMM yyyy' }}
+              </p>
+            </td>
+
+
+            <!-- Status -->
+            <td class="px-5 py-4">
+              <span
+                [class]="'inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ' + getStatusClass(receipt.status)"
+              >
+                <span class="mr-1.5 h-1.5 w-1.5 rounded-full bg-current"></span>
+
+                {{ receipt.status }}
+              </span>
+            </td>
+
+
+            <!-- Actions -->
+            <td class="px-5 py-4">
+              <div
+                class="flex flex-wrap justify-end gap-2"
+              >
+
+                <button
+                  type="button"
+                  (click)="viewGoodsReceipt(receipt)"
+                  class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-600 transition hover:bg-slate-50"
+                >
+                  View
+                </button>
+
+
+                <button
+                  *ngIf="receipt.status === 'Draft'"
+                  type="button"
+                  (click)="completeGoodsReceipt(receipt)"
+                  class="rounded-lg bg-green-50 px-3 py-2 text-xs font-semibold text-green-700 transition hover:bg-green-100"
+                >
+                  Complete
+                </button>
+
+
+                <button
+                  *ngIf="receipt.status === 'Draft'"
+                  type="button"
+                  (click)="cancelGoodsReceipt(receipt)"
+                  class="rounded-lg bg-red-50 px-3 py-2 text-xs font-semibold text-red-700 transition hover:bg-red-100"
+                >
+                  Cancel
+                </button>
+
+              </div>
+            </td>
+
+          </tr>
+
+
+          <!-- EMPTY -->
+          <tr *ngIf="filteredGoodsReceipts.length === 0">
+            <td
+              colspan="7"
+              class="px-5 py-14 text-center"
+            >
+              <div
+                class="mx-auto flex max-w-sm flex-col items-center"
+              >
+                <div
+                  class="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-2xl"
+                >
+                  📦
+                </div>
+
+                <h3
+                  class="mt-4 text-sm font-semibold text-slate-700"
+                >
+                  No goods receipts found
+                </h3>
+
+                <p
+                  class="mt-1 text-xs text-slate-400"
+                >
+                  Try changing your search or status filter.
+                </p>
+              </div>
+            </td>
+          </tr>
+
+        </tbody>
+
+      </table>
+    </div>
+  </div>
+
+
+  <!-- ==================== CREATE MODAL ==================== -->
+  <div
+    *ngIf="showCreateModal"
+    class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-3 backdrop-blur-sm sm:p-5"
+  >
+
+    <div
+      class="flex max-h-[94vh] w-full max-w-5xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl"
+    >
+
+      <!-- Header -->
+      <div
+        class="flex shrink-0 items-start justify-between gap-4 border-b border-slate-200 px-4 py-4 sm:px-6"
+      >
+
+        <div class="flex items-center gap-3">
+
+          <div
+            class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600"
+          >
+            +
+          </div>
+
+          <div>
+            <h2 class="text-lg font-bold text-slate-800">
+              Create Goods Receipt
+            </h2>
+
+            <p class="mt-0.5 text-xs text-slate-400">
+              Receive products against a purchase order.
+            </p>
+          </div>
+
+        </div>
+
+        <button
+          type="button"
+          (click)="closeCreateModal()"
+          class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-xl text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+        >
+          ×
+        </button>
+
+      </div>
+
+
+      <!-- Form -->
+      <form
+        [formGroup]="receiptForm"
+        (ngSubmit)="submitGoodsReceipt()"
+        class="overflow-y-auto p-4 sm:p-6"
+      >
+
+        <!-- Basic Info -->
+        <div
+          class="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 sm:p-5"
+        >
+
+          <div class="mb-5">
+            <h3 class="text-sm font-semibold text-slate-800">
+              Receipt Information
+            </h3>
+
+            <p class="mt-1 text-xs text-slate-400">
+              Select the purchase order and receipt date.
+            </p>
+          </div>
+
+
+          <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+
+            <!-- PO -->
+            <div>
+              <label
+                class="mb-1.5 block text-sm font-medium text-slate-700"
+              >
+                Purchase Order *
+              </label>
+
+              <select
+                formControlName="purchaseOrderId"
+                (change)="onPurchaseOrderChange()"
+                class="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+              >
+                <option value="">
+                  Select Purchase Order
+                </option>
+
+                <option
+                  *ngFor="let po of purchaseOrders"
+                  [value]="po.id"
+                >
+                  {{ po.purchaseOrderNumber }} -
+                  {{ po.supplierName }}
+                </option>
+              </select>
+            </div>
+
+
+            <!-- Date -->
+            <div>
+              <label
+                class="mb-1.5 block text-sm font-medium text-slate-700"
+              >
+                Receipt Date *
+              </label>
+
+              <input
+                type="date"
+                formControlName="receiptDate"
+                class="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+              />
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <!-- PO INFO -->
+        <div
+          *ngIf="selectedPurchaseOrder"
+          class="mt-5 grid grid-cols-1 gap-4 rounded-2xl border border-blue-100 bg-blue-50 p-4 sm:grid-cols-3 sm:p-5"
+        >
+
+          <div>
+            <p class="text-xs font-medium uppercase tracking-wide text-blue-500">
+              Supplier
+            </p>
+
+            <p class="mt-1 font-semibold text-slate-800">
+              {{ selectedPurchaseOrder.supplierName }}
+            </p>
+          </div>
+
+
+          <div>
+            <p class="text-xs font-medium uppercase tracking-wide text-blue-500">
+              Warehouse
+            </p>
+
+            <p class="mt-1 font-semibold text-slate-800">
+              {{ selectedPurchaseOrder.warehouseName }}
+            </p>
+          </div>
+
+
+          <div>
+            <p class="text-xs font-medium uppercase tracking-wide text-blue-500">
+              PO Number
+            </p>
+
+            <p class="mt-1 font-semibold text-slate-800">
+              {{ selectedPurchaseOrder.purchaseOrderNumber }}
+            </p>
+          </div>
+
+        </div>
+
+
+        <!-- ITEMS -->
+        <div class="mt-7">
+
+          <div class="mb-4">
+            <h3 class="text-base font-bold text-slate-800">
+              Received Items
+            </h3>
+
+            <p class="mt-1 text-xs text-slate-400">
+              Enter received and accepted quantities.
+            </p>
+          </div>
+
+
+          <div
+            *ngIf="items.length > 0"
+            class="overflow-hidden rounded-2xl border border-slate-200"
+          >
+
+            <div class="overflow-x-auto">
+              <table class="w-full min-w-[900px] text-left text-sm">
+
+                <thead
+                  class="border-b border-slate-200 bg-slate-50 text-xs uppercase tracking-wide text-slate-500"
+                >
+                  <tr>
+
+                    <th class="px-4 py-3 font-semibold">
+                      Product
+                    </th>
+
+                    <th class="px-4 py-3 font-semibold">
+                      Ordered
+                    </th>
+
+                    <th class="px-4 py-3 font-semibold">
+                      Received
+                    </th>
+
+                    <th class="px-4 py-3 font-semibold">
+                      Accepted
+                    </th>
+
+                    <th class="px-4 py-3 font-semibold">
+                      Rejected
+                    </th>
+
+                    <th class="px-4 py-3 font-semibold">
+                      Remarks
+                    </th>
+
+                  </tr>
+                </thead>
+
+
+                <tbody formArrayName="items">
+
+                  <tr
+                    *ngFor="let item of items.controls; let i = index"
+                    [formGroupName]="i"
+                    class="border-t border-slate-100 transition hover:bg-slate-50"
+                  >
+
+                    <!-- Product -->
+                    <td class="px-4 py-4">
+                      <div>
+                        <p class="font-semibold text-slate-800">
+                          {{ item.get('productName')?.value }}
+                        </p>
+
+                        <p class="mt-1 text-xs text-slate-400">
+                          SKU: {{ item.get('sku')?.value }}
+                        </p>
+                      </div>
+                    </td>
+
+
+                    <!-- Ordered -->
+                    <td class="px-4 py-4">
+                      <span
+                        class="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-600"
+                      >
+                        {{ item.get('orderedQuantity')?.value }}
+                      </span>
+                    </td>
+
+
+                    <!-- Received -->
+                    <td class="px-4 py-4">
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        formControlName="receivedQuantity"
+                        (input)="updateQuantities(i)"
+                        class="w-28 rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                      />
+                    </td>
+
+
+                    <!-- Accepted -->
+                    <td class="px-4 py-4">
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        formControlName="acceptedQuantity"
+                        (input)="onAcceptedQuantityChange(i)"
+                        class="w-28 rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                      />
+                    </td>
+
+
+                    <!-- Rejected -->
+                    <td class="px-4 py-4">
+                      <input
+                        type="number"
+                        readonly
+                        formControlName="rejectedQuantity"
+                        class="w-28 cursor-not-allowed rounded-xl border border-slate-200 bg-slate-100 px-3 py-2.5 text-sm text-slate-500"
+                      />
+                    </td>
+
+
+                    <!-- Remarks -->
+                    <td class="px-4 py-4">
+                      <input
+                        type="text"
+                        formControlName="remarks"
+                        placeholder="Optional"
+                        class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                      />
+                    </td>
+
+                  </tr>
+
+                </tbody>
+
+              </table>
+            </div>
+
+          </div>
+
+
+          <!-- No items -->
+          <div
+            *ngIf="selectedPurchaseOrder && items.length === 0"
+            class="rounded-2xl border border-yellow-200 bg-yellow-50 p-5 text-sm text-yellow-700"
+          >
+            <div class="flex items-start gap-3">
+              <span class="text-lg">⚠️</span>
+
+              <div>
+                <p class="font-semibold">
+                  No remaining items available
+                </p>
+
+                <p class="mt-1 text-xs">
+                  This purchase order has no remaining items to receive.
+                </p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+
+        <!-- Remarks -->
+        <div class="mt-6">
+
+          <label
+            class="mb-1.5 block text-sm font-medium text-slate-700"
+          >
+            Remarks
+          </label>
+
+          <textarea
+            rows="3"
+            formControlName="remarks"
+            placeholder="Enter remarks..."
+            class="w-full resize-none rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+          ></textarea>
+
+        </div>
+
+
+        <!-- Actions -->
+        <div
+          class="mt-6 flex flex-col-reverse gap-3 border-t border-slate-200 pt-5 sm:flex-row sm:justify-end"
+        >
+
+          <button
+            type="button"
+            (click)="closeCreateModal()"
+            [disabled]="isSubmitting"
+            class="w-full rounded-xl border border-slate-300 px-5 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-50 disabled:opacity-50 sm:w-auto"
+          >
+            Cancel
+          </button>
+
+
+          <button
+            type="submit"
+            [disabled]="isSubmitting"
+            class="w-full rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+          >
+            <span *ngIf="!isSubmitting">
+              Create Goods Receipt
+            </span>
+
+            <span *ngIf="isSubmitting">
+              Creating...
+            </span>
+          </button>
+
+        </div>
+
+      </form>
+
+    </div>
+
+  </div>
+
+
+  <!-- ==================== VIEW MODAL ==================== -->
+  <div
+    *ngIf="showViewModal && selectedGoodsReceipt"
+    class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-3 backdrop-blur-sm sm:p-5"
+  >
+
+    <div
+      class="flex max-h-[94vh] w-full max-w-5xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl"
+    >
+
+      <!-- Header -->
+      <div
+        class="flex shrink-0 items-start justify-between gap-4 border-b border-slate-200 px-4 py-4 sm:px-6"
+      >
+
+        <div class="flex items-center gap-3">
+
+          <div
+            class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-xs font-bold text-blue-600"
+          >
+            GRN
+          </div>
+
+          <div>
+            <h2 class="text-lg font-bold text-slate-800">
+              Goods Receipt Details
+            </h2>
+
+            <p class="mt-0.5 text-xs text-slate-400">
+              {{ selectedGoodsReceipt.grnNumber }}
+            </p>
+          </div>
+
+        </div>
+
+
+        <button
+          type="button"
+          (click)="closeViewModal()"
+          class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-xl text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+        >
+          ×
+        </button>
+
+      </div>
+
+
+      <!-- Content -->
+      <div class="overflow-y-auto p-4 sm:p-6">
+
+        <!-- Details -->
+        <div
+          class="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 sm:p-5"
+        >
+
+          <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+
+            <div>
+              <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                GRN Number
+              </p>
+
+              <p class="mt-1 font-semibold text-slate-800">
+                {{ selectedGoodsReceipt.grnNumber }}
+              </p>
+            </div>
+
+
+            <div>
+              <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                Purchase Order
+              </p>
+
+              <p class="mt-1 font-semibold text-slate-800">
+                {{ selectedGoodsReceipt.purchaseOrderNumber }}
+              </p>
+            </div>
+
+
+            <div>
+              <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                Warehouse
+              </p>
+
+              <p class="mt-1 font-semibold text-slate-800">
+                {{ selectedGoodsReceipt.warehouseName }}
+              </p>
+            </div>
+
+
+            <div>
+              <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                Received By
+              </p>
+
+              <p class="mt-1 font-semibold text-slate-800">
+                {{ selectedGoodsReceipt.receivedByUserName }}
+              </p>
+            </div>
+
+
+            <div>
+              <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                Receipt Date
+              </p>
+
+              <p class="mt-1 font-semibold text-slate-800">
+                {{ selectedGoodsReceipt.receiptDate | date:'dd MMM yyyy' }}
+              </p>
+            </div>
+
+
+            <div>
+              <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                Status
+              </p>
+
+              <span
+                [class]="'mt-1 inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ' + getStatusClass(selectedGoodsReceipt.status)"
+              >
+                <span class="mr-1.5 h-1.5 w-1.5 rounded-full bg-current"></span>
+
+                {{ selectedGoodsReceipt.status }}
+              </span>
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <!-- Remarks -->
+        <div
+          *ngIf="selectedGoodsReceipt.remarks"
+          class="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-4"
+        >
+
+          <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">
+            Remarks
+          </p>
+
+          <p class="mt-2 text-sm leading-6 text-slate-700">
+            {{ selectedGoodsReceipt.remarks }}
+          </p>
+
+        </div>
+
+
+        <!-- Receipt Items -->
+        <div class="mt-7">
+
+          <div class="mb-4">
+            <h3 class="text-base font-bold text-slate-800">
+              Receipt Items
+            </h3>
+
+            <p class="mt-1 text-xs text-slate-400">
+              Products received in this goods receipt.
+            </p>
+          </div>
+
+
+          <div
+            class="overflow-hidden rounded-2xl border border-slate-200"
+          >
+
+            <div class="overflow-x-auto">
+              <table class="w-full min-w-[800px] text-left text-sm">
+
+                <thead
+                  class="border-b border-slate-200 bg-slate-50 text-xs uppercase tracking-wide text-slate-500"
+                >
+                  <tr>
+
+                    <th class="px-4 py-3 font-semibold">
+                      Product
+                    </th>
+
+                    <th class="px-4 py-3 font-semibold">
+                      Received
+                    </th>
+
+                    <th class="px-4 py-3 font-semibold">
+                      Accepted
+                    </th>
+
+                    <th class="px-4 py-3 font-semibold">
+                      Rejected
+                    </th>
+
+                    <th class="px-4 py-3 font-semibold">
+                      Remarks
+                    </th>
+
+                  </tr>
+                </thead>
+
+
+                <tbody class="divide-y divide-slate-100">
+
+                  <tr
+                    *ngFor="let item of selectedGoodsReceipt.items"
+                    class="transition hover:bg-slate-50"
+                  >
+
+                    <td class="px-4 py-4">
+                      <p class="font-semibold text-slate-800">
+                        {{ item.productName }}
+                      </p>
+                    </td>
+
+
+                    <td class="px-4 py-4">
+                      <span
+                        class="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-600"
+                      >
+                        {{ item.receivedQuantity }}
+                      </span>
+                    </td>
+
+
+                    <td class="px-4 py-4">
+                      <span
+                        class="rounded-lg bg-green-50 px-3 py-1.5 text-xs font-semibold text-green-700"
+                      >
+                        {{ item.acceptedQuantity || 0 }}
+                      </span>
+                    </td>
+
+
+                    <td class="px-4 py-4">
+                      <span
+                        class="rounded-lg bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700"
+                      >
+                        {{ item.rejectedQuantity || 0 }}
+                      </span>
+                    </td>
+
+
+                    <td class="px-4 py-4 text-slate-600">
+                      {{ item.remarks || '-' }}
+                    </td>
+
+                  </tr>
+
+                </tbody>
+
+              </table>
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <!-- Footer -->
+        <div
+          class="mt-7 flex justify-stretch border-t border-slate-200 pt-5 sm:justify-end"
+        >
+
+          <button
+            type="button"
+            (click)="closeViewModal()"
+            class="w-full rounded-xl border border-slate-300 px-5 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-50 sm:w-auto"
+          >
+            Close
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>

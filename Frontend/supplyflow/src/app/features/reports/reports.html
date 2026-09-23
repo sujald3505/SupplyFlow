@@ -1,0 +1,929 @@
+<div class="mx-auto w-full max-w-7xl space-y-6">
+  <!-- HEADER -->
+  <div>
+    <div class="mb-2 flex items-center gap-2 text-xs font-medium text-slate-500">
+      <span>Analytics</span>
+      <span>/</span>
+      <span class="text-blue-600">Reports</span>
+    </div>
+
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+      <div>
+        <h1 class="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
+          Reports & Analytics
+        </h1>
+
+        <p class="mt-1 text-sm text-slate-500">
+          Monitor inventory, transactions, stock levels and purchases.
+        </p>
+      </div>
+
+      <button
+        type="button"
+        (click)="loadDashboard()"
+        class="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700"
+      >
+        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M4 4v5h5M20 20v-5h-5M5.5 9A7 7 0 0117 6.5L20 9M19 15a7 7 0 01-11.5 2.5L4 15"
+          />
+        </svg>
+
+        Refresh
+      </button>
+    </div>
+  </div>
+
+  <!-- ERROR -->
+  @if (errorMessage) {
+    <div class="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+      {{ errorMessage }}
+    </div>
+  }
+
+  <!-- DASHBOARD CARDS -->
+  <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <!-- STOCK -->
+    <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium text-slate-500">Total Stock</p>
+
+          <p class="mt-2 text-2xl font-bold text-slate-900">
+            {{ formatNumber(inventoryStockSummary.totalQuantity) }}
+          </p>
+        </div>
+
+        <div class="rounded-xl bg-blue-50 p-3 text-blue-600">
+          <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="1.8"
+              d="M3 7l9-4 9 4-9 4-9-4zm0 0v10l9 4 9-4V7M12 11v10"
+            />
+          </svg>
+        </div>
+      </div>
+
+      <p class="mt-3 text-xs text-slate-500">
+        Inventory Value:
+        <span class="font-semibold text-slate-700">
+          {{ formatCurrency(inventoryStockSummary.totalInventoryValue) }}
+        </span>
+      </p>
+    </div>
+
+    <!-- LOW STOCK -->
+    <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium text-slate-500">Low Stock</p>
+
+          <p class="mt-2 text-2xl font-bold text-amber-600">
+            {{ formatNumber(inventoryStockSummary.lowStockCount) }}
+          </p>
+        </div>
+
+        <div class="rounded-xl bg-amber-50 p-3 text-amber-600">
+          <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="1.8"
+              d="M12 9v4m0 4h.01M10.3 3.4L2.8 17a2 2 0 001.7 3h15a2 2 0 001.7-3L13.7 3.4a2 2 0 00-3.4 0z"
+            />
+          </svg>
+        </div>
+      </div>
+
+      <p class="mt-3 text-xs text-slate-500">
+        Out of stock:
+        <span class="font-semibold text-red-600">
+          {{ inventoryStockSummary.outOfStockCount }}
+        </span>
+      </p>
+    </div>
+
+    <!-- TRANSACTIONS -->
+    <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium text-slate-500">Transactions</p>
+
+          <p class="mt-2 text-2xl font-bold text-slate-900">
+            {{ formatNumber(inventoryTransactionSummary.totalTransactions) }}
+          </p>
+        </div>
+
+        <div class="rounded-xl bg-violet-50 p-3 text-violet-600">
+          <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="1.8"
+              d="M4 6h16M4 12h16M4 18h10"
+            />
+          </svg>
+        </div>
+      </div>
+
+      <p class="mt-3 text-xs text-slate-500">
+        Quantity:
+        <span class="font-semibold text-slate-700">
+          {{ formatNumber(inventoryTransactionSummary.totalTransactionQuantity) }}
+        </span>
+      </p>
+    </div>
+
+    <!-- PURCHASE -->
+    <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium text-slate-500">Purchase Orders</p>
+
+          <p class="mt-2 text-2xl font-bold text-slate-900">
+            {{ formatNumber(purchaseOrderSummary.totalPurchaseOrders) }}
+          </p>
+        </div>
+
+        <div class="rounded-xl bg-emerald-50 p-3 text-emerald-600">
+          <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="1.8"
+              d="M3 5h18M5 5v14h14V5M8 9h8M8 13h5"
+            />
+          </svg>
+        </div>
+      </div>
+
+      <p class="mt-3 text-xs text-slate-500">
+        Amount:
+        <span class="font-semibold text-emerald-600">
+          {{ formatCurrency(purchaseOrderSummary.totalPurchaseAmount) }}
+        </span>
+      </p>
+    </div>
+  </div>
+
+  <!-- VISUAL ANALYTICS -->
+  <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+    <!-- INVENTORY TRANSACTION CHART -->
+    <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div class="mb-5">
+        <h2 class="text-base font-bold text-slate-900">Inventory Movement</h2>
+
+        <p class="mt-1 text-xs text-slate-500">Stock-in vs stock-out transactions</p>
+      </div>
+
+      <div class="space-y-5">
+        <!-- STOCK IN -->
+        <div>
+          <div class="mb-2 flex justify-between text-sm">
+            <span class="font-medium text-slate-700"> Stock In </span>
+
+            <span class="font-semibold text-emerald-600">
+              {{ inventoryTransactionSummary.stockInTransactions }}
+            </span>
+          </div>
+
+          <div class="h-4 overflow-hidden rounded-full bg-slate-100">
+            <div
+              class="h-full rounded-full bg-emerald-500 transition-all duration-500"
+              [style.width.%]="getStockInPercentage()"
+            ></div>
+          </div>
+        </div>
+
+        <!-- STOCK OUT -->
+        <div>
+          <div class="mb-2 flex justify-between text-sm">
+            <span class="font-medium text-slate-700"> Stock Out </span>
+
+            <span class="font-semibold text-red-600">
+              {{ inventoryTransactionSummary.stockOutTransactions }}
+            </span>
+          </div>
+
+          <div class="h-4 overflow-hidden rounded-full bg-slate-100">
+            <div
+              class="h-full rounded-full bg-red-500 transition-all duration-500"
+              [style.width.%]="getStockOutPercentage()"
+            ></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PURCHASE STATUS CHART -->
+    <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div class="mb-5">
+        <h2 class="text-base font-bold text-slate-900">Purchase Order Status</h2>
+
+        <p class="mt-1 text-xs text-slate-500">Distribution of purchase orders</p>
+      </div>
+
+      <div class="space-y-3">
+        <!-- DRAFT -->
+        <div>
+          <div class="mb-1 flex justify-between text-xs">
+            <span class="text-slate-600"> Draft </span>
+
+            <span class="font-semibold">
+              {{ purchaseOrderSummary.draftCount }}
+            </span>
+          </div>
+
+          <div class="h-2.5 rounded-full bg-slate-100">
+            <div
+              class="h-full rounded-full bg-slate-400"
+              [style.width.%]="getPurchaseStatusPercentage(purchaseOrderSummary.draftCount)"
+            ></div>
+          </div>
+        </div>
+
+        <!-- SENT -->
+        <div>
+          <div class="mb-1 flex justify-between text-xs">
+            <span class="text-slate-600"> Sent </span>
+
+            <span class="font-semibold">
+              {{ purchaseOrderSummary.sentCount }}
+            </span>
+          </div>
+
+          <div class="h-2.5 rounded-full bg-slate-100">
+            <div
+              class="h-full rounded-full bg-blue-500"
+              [style.width.%]="getPurchaseStatusPercentage(purchaseOrderSummary.sentCount)"
+            ></div>
+          </div>
+        </div>
+
+        <!-- CONFIRMED -->
+        <div>
+          <div class="mb-1 flex justify-between text-xs">
+            <span class="text-slate-600"> Confirmed </span>
+
+            <span class="font-semibold">
+              {{ purchaseOrderSummary.confirmedCount }}
+            </span>
+          </div>
+
+          <div class="h-2.5 rounded-full bg-slate-100">
+            <div
+              class="h-full rounded-full bg-indigo-500"
+              [style.width.%]="getPurchaseStatusPercentage(purchaseOrderSummary.confirmedCount)"
+            ></div>
+          </div>
+        </div>
+
+        <!-- PARTIALLY RECEIVED -->
+        <div>
+          <div class="mb-1 flex justify-between text-xs">
+            <span class="text-slate-600"> Partially Received </span>
+
+            <span class="font-semibold">
+              {{ purchaseOrderSummary.partiallyReceivedCount }}
+            </span>
+          </div>
+
+          <div class="h-2.5 rounded-full bg-slate-100">
+            <div
+              class="h-full rounded-full bg-amber-500"
+              [style.width.%]="
+                getPurchaseStatusPercentage(purchaseOrderSummary.partiallyReceivedCount)
+              "
+            ></div>
+          </div>
+        </div>
+
+        <!-- COMPLETED -->
+        <div>
+          <div class="mb-1 flex justify-between text-xs">
+            <span class="text-slate-600"> Completed </span>
+
+            <span class="font-semibold">
+              {{ purchaseOrderSummary.completedCount }}
+            </span>
+          </div>
+
+          <div class="h-2.5 rounded-full bg-slate-100">
+            <div
+              class="h-full rounded-full bg-emerald-500"
+              [style.width.%]="getPurchaseStatusPercentage(purchaseOrderSummary.completedCount)"
+            ></div>
+          </div>
+        </div>
+
+        <!-- CANCELLED -->
+        <div>
+          <div class="mb-1 flex justify-between text-xs">
+            <span class="text-slate-600"> Cancelled </span>
+
+            <span class="font-semibold">
+              {{ purchaseOrderSummary.cancelledCount }}
+            </span>
+          </div>
+
+          <div class="h-2.5 rounded-full bg-slate-100">
+            <div
+              class="h-full rounded-full bg-red-500"
+              [style.width.%]="getPurchaseStatusPercentage(purchaseOrderSummary.cancelledCount)"
+            ></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STOCK + LOW STOCK CHARTS -->
+  <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+    <!-- STOCK BAR -->
+    <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div class="mb-5">
+        <h2 class="text-base font-bold text-slate-900">Product Stock</h2>
+
+        <p class="mt-1 text-xs text-slate-500">Current stock quantity</p>
+      </div>
+
+      @if (inventoryStockData.length > 0) {
+        <div class="space-y-4">
+          @for (
+            item of inventoryStockData.slice(0, 8);
+            track item.productId + '-' + item.warehouseId
+          ) {
+            <div>
+              <div class="mb-1.5 flex items-center justify-between gap-3">
+                <div class="min-w-0">
+                  <p class="truncate text-xs font-semibold text-slate-700">
+                    {{ item.productName }}
+                  </p>
+
+                  <p class="text-[11px] text-slate-400">
+                    {{ item.warehouseName }}
+                  </p>
+                </div>
+
+                <span class="shrink-0 text-xs font-bold text-slate-700">
+                  {{ formatNumber(item.currentQuantity) }}
+                </span>
+              </div>
+
+              <div class="h-2.5 overflow-hidden rounded-full bg-slate-100">
+                <div
+                  class="h-full rounded-full bg-blue-500 transition-all duration-500"
+                  [style.width.%]="getStockBarWidth(item.currentQuantity)"
+                ></div>
+              </div>
+            </div>
+          }
+        </div>
+      } @else {
+        <div class="py-10 text-center text-sm text-slate-400">No stock data available.</div>
+      }
+    </div>
+
+    <!-- LOW STOCK BAR -->
+    <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div class="mb-5">
+        <h2 class="text-base font-bold text-slate-900">Low Stock Analysis</h2>
+
+        <p class="mt-1 text-xs text-slate-500">Products with stock shortage</p>
+      </div>
+
+      @if (lowStockData.length > 0) {
+        <div class="space-y-4">
+          @for (item of lowStockData.slice(0, 8); track item.productId + '-' + item.warehouseId) {
+            <div>
+              <div class="mb-1.5 flex items-center justify-between gap-3">
+                <div class="min-w-0">
+                  <p class="truncate text-xs font-semibold text-slate-700">
+                    {{ item.productName }}
+                  </p>
+
+                  <p class="text-[11px] text-slate-400">
+                    {{ item.warehouseName }}
+                  </p>
+                </div>
+
+                <span class="shrink-0 text-xs font-bold text-red-600">
+                  -{{ formatNumber(item.shortageQuantity) }}
+                </span>
+              </div>
+
+              <div class="h-2.5 overflow-hidden rounded-full bg-slate-100">
+                <div
+                  class="h-full rounded-full bg-red-500 transition-all duration-500"
+                  [style.width.%]="getShortageBarWidth(item.shortageQuantity)"
+                ></div>
+              </div>
+            </div>
+          }
+        </div>
+      } @else {
+        <div class="py-10 text-center text-sm text-slate-400">No low-stock products.</div>
+      }
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="overflow-x-auto rounded-2xl border border-slate-200 bg-white p-2 shadow-sm">
+    <div class="flex min-w-max gap-2">
+      <button
+        type="button"
+        (click)="changeTab('inventory-stock')"
+        [class.bg-blue-600]="activeTab === 'inventory-stock'"
+        [class.text-white]="activeTab === 'inventory-stock'"
+        [class.text-slate-600]="activeTab !== 'inventory-stock'"
+        class="rounded-xl px-4 py-2.5 text-sm font-semibold transition hover:bg-blue-50"
+      >
+        Inventory Stock
+      </button>
+
+      <button
+        type="button"
+        (click)="changeTab('inventory-transactions')"
+        [class.bg-blue-600]="activeTab === 'inventory-transactions'"
+        [class.text-white]="activeTab === 'inventory-transactions'"
+        [class.text-slate-600]="activeTab !== 'inventory-transactions'"
+        class="rounded-xl px-4 py-2.5 text-sm font-semibold transition hover:bg-blue-50"
+      >
+        Inventory Transactions
+      </button>
+
+      <button
+        type="button"
+        (click)="changeTab('low-stock')"
+        [class.bg-blue-600]="activeTab === 'low-stock'"
+        [class.text-white]="activeTab === 'low-stock'"
+        [class.text-slate-600]="activeTab !== 'low-stock'"
+        class="rounded-xl px-4 py-2.5 text-sm font-semibold transition hover:bg-blue-50"
+      >
+        Low Stock
+      </button>
+
+      <button
+        type="button"
+        (click)="changeTab('purchase-orders')"
+        [class.bg-blue-600]="activeTab === 'purchase-orders'"
+        [class.text-white]="activeTab === 'purchase-orders'"
+        [class.text-slate-600]="activeTab !== 'purchase-orders'"
+        class="rounded-xl px-4 py-2.5 text-sm font-semibold transition hover:bg-blue-50"
+      >
+        Purchase Orders
+      </button>
+    </div>
+  </div>
+
+  <!-- FILTERS -->
+  <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+    <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div>
+        <h2 class="text-base font-bold text-slate-900">Report Filters</h2>
+
+        <p class="mt-1 text-xs text-slate-500">Filter the selected report.</p>
+      </div>
+
+      <div class="flex gap-2">
+        <button
+          type="button"
+          (click)="resetFilters()"
+          class="rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50"
+        >
+          Reset
+        </button>
+
+        <button
+          type="button"
+          (click)="applyFilters()"
+          class="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700"
+        >
+          Apply
+        </button>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div>
+        <label class="mb-1.5 block text-xs font-semibold text-slate-600"> Warehouse ID </label>
+
+        <input
+          type="number"
+          [(ngModel)]="warehouseId"
+          class="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+          placeholder="All warehouses"
+        />
+      </div>
+
+      <div>
+        <label class="mb-1.5 block text-xs font-semibold text-slate-600"> Product ID </label>
+
+        <input
+          type="number"
+          [(ngModel)]="productId"
+          class="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+          placeholder="All products"
+        />
+      </div>
+
+      <div>
+        <label class="mb-1.5 block text-xs font-semibold text-slate-600"> From Date </label>
+
+        <input
+          type="date"
+          [(ngModel)]="fromDate"
+          class="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+        />
+      </div>
+
+      <div>
+        <label class="mb-1.5 block text-xs font-semibold text-slate-600"> To Date </label>
+
+        <input
+          type="date"
+          [(ngModel)]="toDate"
+          class="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+        />
+      </div>
+    </div>
+  </div>
+
+  <!-- LOADING -->
+  @if (loading) {
+    <div class="rounded-2xl border border-slate-200 bg-white p-12 text-center shadow-sm">
+      <div
+        class="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-slate-200 border-t-blue-600"
+      ></div>
+
+      <p class="mt-4 text-sm font-medium text-slate-500">Loading report...</p>
+    </div>
+  }
+
+  <!-- CURRENT REPORT -->
+  @if (!loading) {
+    <!-- INVENTORY STOCK TABLE -->
+    @if (activeTab === 'inventory-stock') {
+      <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <div class="border-b border-slate-200 p-5">
+          <h2 class="font-bold text-slate-900">Inventory Stock Report</h2>
+
+          <p class="mt-1 text-xs text-slate-500">
+            {{ inventoryStockSummary.totalRecords }} records
+          </p>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="min-w-full text-left text-sm">
+            <thead class="bg-slate-50 text-xs uppercase text-slate-500">
+              <tr>
+                <th class="px-5 py-3">Product</th>
+
+                <th class="px-5 py-3">Warehouse</th>
+
+                <th class="px-5 py-3">Quantity</th>
+
+                <th class="px-5 py-3">Minimum</th>
+
+                <th class="px-5 py-3">Status</th>
+
+                <th class="px-5 py-3 text-right">Value</th>
+              </tr>
+            </thead>
+
+            <tbody class="divide-y divide-slate-100">
+              @for (item of inventoryStockData; track item.productId + '-' + item.warehouseId) {
+                <tr class="hover:bg-slate-50">
+                  <td class="px-5 py-4">
+                    <p class="font-semibold text-slate-800">
+                      {{ item.productName }}
+                    </p>
+
+                    <p class="text-xs text-slate-400">
+                      {{ item.sku }}
+                    </p>
+                  </td>
+
+                  <td class="px-5 py-4 text-slate-600">
+                    {{ item.warehouseName }}
+                  </td>
+
+                  <td class="px-5 py-4 font-semibold">
+                    {{ formatNumber(item.currentQuantity) }}
+                  </td>
+
+                  <td class="px-5 py-4 text-slate-600">
+                    {{ formatNumber(item.minimumStockLevel) }}
+                  </td>
+
+                  <td class="px-5 py-4">
+                    <span
+                      class="rounded-full px-2.5 py-1 text-xs font-semibold"
+                      [class.bg-emerald-50]="item.stockStatus === 'Normal'"
+                      [class.text-emerald-700]="item.stockStatus === 'Normal'"
+                      [class.bg-amber-50]="item.stockStatus === 'Low'"
+                      [class.text-amber-700]="item.stockStatus === 'Low'"
+                      [class.bg-red-50]="item.stockStatus === 'OutOfStock'"
+                      [class.text-red-700]="item.stockStatus === 'OutOfStock'"
+                    >
+                      {{ item.stockStatus }}
+                    </span>
+                  </td>
+
+                  <td class="px-5 py-4 text-right font-semibold text-slate-800">
+                    {{ formatCurrency(item.inventoryValue) }}
+                  </td>
+                </tr>
+              }
+
+              @if (!inventoryStockData.length) {
+                <tr>
+                  <td colspan="6" class="px-5 py-12 text-center text-sm text-slate-400">
+                    No inventory records found.
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+
+    <!-- TRANSACTIONS -->
+    @if (activeTab === 'inventory-transactions') {
+      <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <div class="border-b border-slate-200 p-5">
+          <h2 class="font-bold text-slate-900">Inventory Transactions</h2>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="min-w-full text-left text-sm">
+            <thead class="bg-slate-50 text-xs uppercase text-slate-500">
+              <tr>
+                <th class="px-5 py-3">Date</th>
+
+                <th class="px-5 py-3">Product</th>
+
+                <th class="px-5 py-3">Warehouse</th>
+
+                <th class="px-5 py-3">Type</th>
+
+                <th class="px-5 py-3">Quantity</th>
+
+                <th class="px-5 py-3">Reference</th>
+              </tr>
+            </thead>
+
+            <tbody class="divide-y divide-slate-100">
+              @for (item of inventoryTransactionData; track item.id) {
+                <tr class="hover:bg-slate-50">
+                  <td class="px-5 py-4 text-slate-600">
+                    {{ item.createdAt | date: 'dd MMM yyyy, hh:mm a' }}
+                  </td>
+
+                  <td class="px-5 py-4">
+                    <p class="font-semibold text-slate-800">
+                      {{ item.productName }}
+                    </p>
+
+                    <p class="text-xs text-slate-400">
+                      {{ item.sku }}
+                    </p>
+                  </td>
+
+                  <td class="px-5 py-4">
+                    {{ item.warehouseName }}
+                  </td>
+
+                  <td class="px-5 py-4">
+                    <span
+                      class="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700"
+                    >
+                      {{ item.transactionType }}
+                    </span>
+                  </td>
+
+                  <td class="px-5 py-4 font-semibold">
+                    {{ formatNumber(item.quantity) }}
+                  </td>
+
+                  <td class="px-5 py-4 text-slate-500">
+                    {{ item.referenceNumber || '-' }}
+                  </td>
+                </tr>
+              }
+
+              @if (!inventoryTransactionData.length) {
+                <tr>
+                  <td colspan="6" class="px-5 py-12 text-center text-sm text-slate-400">
+                    No transactions found.
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+
+    <!-- LOW STOCK -->
+    @if (activeTab === 'low-stock') {
+      <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <div class="border-b border-slate-200 p-5">
+          <h2 class="font-bold text-slate-900">Low Stock Report</h2>
+
+          <p class="mt-1 text-xs text-slate-500">
+            Shortage:
+            {{ formatNumber(lowStockSummary.totalShortageQuantity) }}
+          </p>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="min-w-full text-left text-sm">
+            <thead class="bg-slate-50 text-xs uppercase text-slate-500">
+              <tr>
+                <th class="px-5 py-3">Product</th>
+
+                <th class="px-5 py-3">Warehouse</th>
+
+                <th class="px-5 py-3">Current</th>
+
+                <th class="px-5 py-3">Minimum</th>
+
+                <th class="px-5 py-3">Shortage</th>
+              </tr>
+            </thead>
+
+            <tbody class="divide-y divide-slate-100">
+              @for (item of lowStockData; track item.productId + '-' + item.warehouseId) {
+                <tr class="hover:bg-slate-50">
+                  <td class="px-5 py-4">
+                    <p class="font-semibold text-slate-800">
+                      {{ item.productName }}
+                    </p>
+
+                    <p class="text-xs text-slate-400">
+                      {{ item.sku }}
+                    </p>
+                  </td>
+
+                  <td class="px-5 py-4">
+                    {{ item.warehouseName }}
+                  </td>
+
+                  <td class="px-5 py-4">
+                    {{ formatNumber(item.currentQuantity) }}
+                  </td>
+
+                  <td class="px-5 py-4">
+                    {{ formatNumber(item.minimumStockLevel) }}
+                  </td>
+
+                  <td class="px-5 py-4 font-bold text-red-600">
+                    {{ formatNumber(item.shortageQuantity) }}
+                  </td>
+                </tr>
+              }
+
+              @if (!lowStockData.length) {
+                <tr>
+                  <td colspan="5" class="px-5 py-12 text-center text-sm text-slate-400">
+                    No low-stock products found.
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+
+    <!-- PURCHASE ORDERS -->
+    @if (activeTab === 'purchase-orders') {
+      <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <div class="border-b border-slate-200 p-5">
+          <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 class="font-bold text-slate-900">Purchase Order Report</h2>
+
+              <p class="mt-1 text-xs text-slate-500">
+                Total:
+                {{ formatCurrency(purchaseOrderSummary.totalPurchaseAmount) }}
+              </p>
+            </div>
+
+            <div class="rounded-xl bg-emerald-50 px-4 py-2 text-sm font-bold text-emerald-700">
+              {{ purchaseOrderSummary.totalPurchaseOrders }}
+              Orders
+            </div>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="min-w-full text-left text-sm">
+            <thead class="bg-slate-50 text-xs uppercase text-slate-500">
+              <tr>
+                <th class="px-5 py-3">PO Number</th>
+
+                <th class="px-5 py-3">Supplier</th>
+
+                <th class="px-5 py-3">Warehouse</th>
+
+                <th class="px-5 py-3">Order Date</th>
+
+                <th class="px-5 py-3">Status</th>
+
+                <th class="px-5 py-3 text-right">Amount</th>
+              </tr>
+            </thead>
+
+            <tbody class="divide-y divide-slate-100">
+              @for (item of purchaseOrderData; track item.id) {
+                <tr class="hover:bg-slate-50">
+                  <td class="px-5 py-4 font-semibold text-slate-800">
+                    {{ item.purchaseOrderNumber }}
+                  </td>
+
+                  <td class="px-5 py-4">
+                    {{ item.supplierName }}
+                  </td>
+
+                  <td class="px-5 py-4">
+                    {{ item.warehouseName }}
+                  </td>
+
+                  <td class="px-5 py-4 text-slate-600">
+                    {{ item.orderDate | date: 'dd MMM yyyy' }}
+                  </td>
+
+                  <td class="px-5 py-4">
+                    <span
+                      class="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700"
+                    >
+                      {{ item.status }}
+                    </span>
+                  </td>
+
+                  <td class="px-5 py-4 text-right font-bold text-slate-800">
+                    {{ formatCurrency(item.totalAmount) }}
+                  </td>
+                </tr>
+              }
+
+              @if (!purchaseOrderData.length) {
+                <tr>
+                  <td colspan="6" class="px-5 py-12 text-center text-sm text-slate-400">
+                    No purchase orders found.
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+
+    <!-- PAGINATION -->
+    <div
+      class="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between"
+    >
+      <p class="text-sm text-slate-500">
+        Page
+        <span class="font-semibold text-slate-800">
+          {{ pageNumber }}
+        </span>
+
+        of
+
+        <span class="font-semibold text-slate-800">
+          {{ totalPages || 1 }}
+        </span>
+      </p>
+
+      <div class="flex gap-2">
+        <button
+          type="button"
+          (click)="previousPage()"
+          [disabled]="pageNumber <= 1"
+          class="rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          Previous
+        </button>
+
+        <button
+          type="button"
+          (click)="nextPage()"
+          [disabled]="pageNumber >= totalPages"
+          class="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          Next
+        </button>
+      </div>
+    </div>
+  }
+</div>

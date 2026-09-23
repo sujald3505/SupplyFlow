@@ -1,0 +1,1072 @@
+<div class="min-h-screen bg-slate-50 p-4 sm:p-6 lg:p-8">
+  <!-- ===================================================== -->
+  <!-- PAGE HEADER -->
+  <!-- ===================================================== -->
+
+  <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <div>
+      <h1 class="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">Sales</h1>
+
+      <p class="mt-1 text-sm text-slate-500">Create and manage customer sales</p>
+    </div>
+
+    <button
+      *ngIf="!showForm && !selectedSale"
+      type="button"
+      (click)="openAddForm()"
+      class="inline-flex items-center justify-center gap-2 rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+    >
+      <span class="text-lg leading-none">+</span>
+      New Sale
+    </button>
+  </div>
+
+  <!-- ===================================================== -->
+  <!-- ERROR -->
+  <!-- ===================================================== -->
+
+  <div
+    *ngIf="errorMessage"
+    class="mb-5 flex items-start gap-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+  >
+    <svg class="mt-0.5 h-5 w-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+        d="M12 8v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"
+      />
+    </svg>
+
+    <span>
+      {{ errorMessage }}
+    </span>
+  </div>
+
+  <!-- ===================================================== -->
+  <!-- LOADING -->
+  <!-- ===================================================== -->
+
+  <div
+    *ngIf="isLoading"
+    class="flex min-h-[300px] items-center justify-center rounded-xl border border-slate-200 bg-white shadow-sm"
+  >
+    <div class="flex flex-col items-center gap-3">
+      <div
+        class="h-8 w-8 animate-spin rounded-full border-4 border-slate-200 border-t-indigo-600"
+      ></div>
+
+      <p class="text-sm text-slate-500">Loading sales...</p>
+    </div>
+  </div>
+
+  <!-- ===================================================== -->
+  <!-- SALES LIST -->
+  <!-- ===================================================== -->
+
+  <div
+    *ngIf="!isLoading && !showForm && !selectedSale"
+    class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm"
+  >
+    <!-- Card Header -->
+
+    <div class="border-b border-slate-200 px-5 py-4 sm:px-6">
+      <div class="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h2 class="text-lg font-semibold text-slate-900">Sales History</h2>
+
+          <p class="text-sm text-slate-500">View all completed sales and invoices</p>
+        </div>
+
+        <div *ngIf="sales.length > 0" class="text-sm text-slate-500">
+          {{ sales.length }} sale{{ sales.length === 1 ? '' : 's' }}
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty -->
+
+    <div
+      *ngIf="sales.length === 0"
+      class="flex min-h-[320px] flex-col items-center justify-center px-6 text-center"
+    >
+      <div class="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-indigo-50">
+        <svg class="h-7 w-7 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M9 14h6m-6 4h6M7 3h10a2 2 0 012 2v14a2 2 0 01-2 2H7a2 2 0 01-2-2V5a2 2 0 012-2z"
+          />
+        </svg>
+      </div>
+
+      <h3 class="text-base font-semibold text-slate-900">No Sales Found</h3>
+
+      <p class="mt-1 max-w-sm text-sm text-slate-500">
+        Create your first sale to start managing customer invoices.
+      </p>
+
+      <button
+        type="button"
+        (click)="openAddForm()"
+        class="mt-5 rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700"
+      >
+        Create Sale
+      </button>
+    </div>
+
+    <!-- Sales Table -->
+
+    <div *ngIf="sales.length > 0" class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-slate-200">
+        <thead class="bg-slate-50">
+          <tr>
+            <th
+              class="whitespace-nowrap px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500"
+            >
+              Invoice
+            </th>
+
+            <th
+              class="whitespace-nowrap px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500"
+            >
+              Date
+            </th>
+
+            <th
+              class="whitespace-nowrap px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500"
+            >
+              Customer
+            </th>
+
+            <th
+              class="whitespace-nowrap px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500"
+            >
+              Warehouse
+            </th>
+
+            <th
+              class="whitespace-nowrap px-5 py-3 text-center text-xs font-semibold uppercase tracking-wider text-slate-500"
+            >
+              Items
+            </th>
+
+            <th
+              class="whitespace-nowrap px-5 py-3 text-right text-xs font-semibold uppercase tracking-wider text-slate-500"
+            >
+              Total
+            </th>
+
+            <th
+              class="whitespace-nowrap px-5 py-3 text-center text-xs font-semibold uppercase tracking-wider text-slate-500"
+            >
+              Status
+            </th>
+
+            <th
+              class="whitespace-nowrap px-5 py-3 text-right text-xs font-semibold uppercase tracking-wider text-slate-500"
+            >
+              Action
+            </th>
+          </tr>
+        </thead>
+
+        <tbody class="divide-y divide-slate-100 bg-white">
+          <tr *ngFor="let sale of sales" class="transition hover:bg-slate-50">
+            <td class="whitespace-nowrap px-5 py-4">
+              <span class="font-semibold text-indigo-600">
+                {{ sale.invoiceNumber }}
+              </span>
+            </td>
+
+            <td class="whitespace-nowrap px-5 py-4 text-sm text-slate-600">
+              {{ sale.saleDate | date: 'dd MMM yyyy' }}
+            </td>
+
+            <td class="whitespace-nowrap px-5 py-4">
+              <div class="font-medium text-slate-800">
+                {{ getCustomerName(sale.customerId) }}
+              </div>
+            </td>
+
+            <td class="whitespace-nowrap px-5 py-4 text-sm text-slate-600">
+              {{ sale.warehouseName }}
+            </td>
+
+            <td class="whitespace-nowrap px-5 py-4 text-center text-sm text-slate-600">
+              {{ getTotalItems(sale) }}
+            </td>
+
+            <td class="whitespace-nowrap px-5 py-4 text-right">
+              <span class="font-semibold text-slate-900">
+                ₹{{ sale.grandTotal | number: '1.2-2' }}
+              </span>
+            </td>
+
+            <td class="whitespace-nowrap px-5 py-4 text-center">
+              <span
+                class="inline-flex rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700"
+              >
+                {{ sale.status }}
+              </span>
+            </td>
+
+            <td class="whitespace-nowrap px-5 py-4 text-right">
+              <button
+                type="button"
+                (click)="viewSale(sale)"
+                class="rounded-lg border border-slate-200 px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-700"
+              >
+                View
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ===================================================== -->
+  <!-- CREATE SALE -->
+  <!-- ===================================================== -->
+
+  <div
+    *ngIf="showForm && !selectedSale"
+    class="rounded-xl border border-slate-200 bg-white shadow-sm"
+  >
+    <!-- Header -->
+
+    <div class="flex items-center justify-between border-b border-slate-200 px-5 py-4 sm:px-6">
+      <div>
+        <h2 class="text-lg font-semibold text-slate-900">Create New Sale</h2>
+
+        <p class="mt-1 text-sm text-slate-500">Select customer, warehouse and products</p>
+      </div>
+
+      <button
+        type="button"
+        (click)="closeForm()"
+        class="flex h-9 w-9 items-center justify-center rounded-lg text-xl text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+      >
+        ×
+      </button>
+    </div>
+
+    <div class="space-y-6 p-5 sm:p-6">
+      <!-- ================================================= -->
+      <!-- BASIC INFORMATION -->
+      <!-- ================================================= -->
+
+      <div>
+        <h3 class="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-700">
+          Sale Information
+        </h3>
+
+        <div class="grid grid-cols-1 gap-5 lg:grid-cols-2">
+          <!-- WAREHOUSE -->
+
+          <div>
+            <label class="mb-2 block text-sm font-medium text-slate-700">
+              Warehouse <span class="text-red-500">*</span>
+            </label>
+
+            <select
+              [formControl]="saleForm.controls.warehouseId"
+              class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+            >
+              <option [ngValue]="0">Select Warehouse</option>
+
+              <option *ngFor="let warehouse of warehouses" [ngValue]="warehouse.id">
+                {{ warehouse.name }}
+              </option>
+            </select>
+
+            <p
+              *ngIf="saleForm.controls.warehouseId.touched && saleForm.controls.warehouseId.invalid"
+              class="mt-1.5 text-xs text-red-600"
+            >
+              Please select warehouse.
+            </p>
+          </div>
+
+          <!-- CUSTOMER -->
+
+          <div>
+            <label class="mb-2 block text-sm font-medium text-slate-700">
+              Customer / Firm <span class="text-red-500">*</span>
+            </label>
+
+            <div class="flex gap-2">
+              <select
+                [formControl]="saleForm.controls.customerId"
+                class="min-w-0 flex-1 rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+              >
+                <option [ngValue]="0">Select Customer</option>
+
+                <option *ngFor="let customer of customers" [ngValue]="customer.id">
+                  {{ customer.name }}
+
+                  <ng-container *ngIf="customer.phone"> - {{ customer.phone }} </ng-container>
+                </option>
+              </select>
+
+              <button
+                type="button"
+                (click)="openCustomerForm()"
+                class="shrink-0 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2 text-sm font-semibold text-indigo-700 transition hover:bg-indigo-100"
+              >
+                + New
+              </button>
+            </div>
+
+            <p
+              *ngIf="saleForm.controls.customerId.touched && saleForm.controls.customerId.invalid"
+              class="mt-1.5 text-xs text-red-600"
+            >
+              Please select customer.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================================================= -->
+      <!-- PRODUCTS -->
+      <!-- ================================================= -->
+
+      <div class="rounded-xl border border-slate-200">
+        <div class="border-b border-slate-200 px-4 py-4">
+          <h3 class="text-base font-semibold text-slate-900">Products</h3>
+
+          <p class="mt-1 text-sm text-slate-500">
+            Add products and set quantity, price, discount and tax.
+          </p>
+        </div>
+
+        <div class="p-4">
+          <!-- PRODUCT SELECT -->
+
+          <div class="flex flex-col gap-3 sm:flex-row">
+            <select
+              #productSelect
+              class="min-w-0 flex-1 rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+            >
+              <option value="0">Select Product</option>
+
+              <option *ngFor="let product of products" [value]="product.id">
+                {{ product.name }}
+
+                <ng-container *ngIf="product.sku"> - {{ product.sku }} </ng-container>
+              </option>
+            </select>
+
+            <button
+              type="button"
+              (click)="addProduct(+productSelect.value); productSelect.value = '0'"
+              class="rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700"
+            >
+              + Add Product
+            </button>
+          </div>
+
+          <!-- ITEMS -->
+
+          <div
+            *ngIf="items.length > 0"
+            class="mt-5 overflow-x-auto rounded-lg border border-slate-200"
+          >
+            <table class="min-w-[850px] w-full divide-y divide-slate-200">
+              <thead class="bg-slate-50">
+                <tr>
+                  <th
+                    class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500"
+                  >
+                    Product
+                  </th>
+
+                  <th
+                    class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500"
+                  >
+                    Qty
+                  </th>
+
+                  <th
+                    class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500"
+                  >
+                    Unit Price
+                  </th>
+
+                  <th
+                    class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500"
+                  >
+                    Discount
+                  </th>
+
+                  <th
+                    class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500"
+                  >
+                    Tax
+                  </th>
+
+                  <th
+                    class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500"
+                  >
+                    Total
+                  </th>
+
+                  <th class="w-12 px-4 py-3"></th>
+                </tr>
+              </thead>
+
+              <tbody class="divide-y divide-slate-100 bg-white">
+                <tr *ngFor="let item of items; let i = index" class="hover:bg-slate-50">
+                  <!-- PRODUCT -->
+
+                  <td class="px-4 py-4">
+                    <div class="font-medium text-slate-800">
+                      {{ getProductName(item.productId) }}
+                    </div>
+
+                    <div class="mt-0.5 text-xs text-slate-400">
+                      {{ getProductSku(item.productId) }}
+                    </div>
+                  </td>
+
+                  <!-- QTY -->
+
+                  <td class="px-4 py-4">
+                    <input
+                      type="number"
+                      min="0.01"
+                      step="0.01"
+                      [(ngModel)]="item.quantity"
+                      [ngModelOptions]="{ standalone: true }"
+                      class="w-24 rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                    />
+                  </td>
+
+                  <!-- PRICE -->
+
+                  <td class="px-4 py-4">
+                    <div class="relative w-32">
+                      <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-slate-400">
+                        ₹
+                      </span>
+
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        [(ngModel)]="item.unitPrice"
+                        [ngModelOptions]="{ standalone: true }"
+                        class="w-full rounded-lg border border-slate-300 py-2 pl-7 pr-3 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                      />
+                    </div>
+                  </td>
+
+                  <!-- DISCOUNT -->
+
+                  <td class="px-4 py-4">
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      [(ngModel)]="item.discount"
+                      [ngModelOptions]="{ standalone: true }"
+                      class="w-28 rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                    />
+                  </td>
+
+                  <!-- TAX -->
+
+                  <td class="px-4 py-4">
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      [(ngModel)]="item.tax"
+                      [ngModelOptions]="{ standalone: true }"
+                      class="w-28 rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                    />
+                  </td>
+
+                  <!-- TOTAL -->
+
+                  <td class="px-4 py-4 text-right">
+                    <span class="font-semibold text-slate-900">
+                      ₹{{ getItemTotal(item) | number: '1.2-2' }}
+                    </span>
+                  </td>
+
+                  <!-- REMOVE -->
+
+                  <td class="px-4 py-4">
+                    <button
+                      type="button"
+                      (click)="removeItem(i)"
+                      class="flex h-8 w-8 items-center justify-center rounded-lg text-lg text-slate-400 transition hover:bg-red-50 hover:text-red-600"
+                    >
+                      ×
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- EMPTY -->
+
+          <div
+            *ngIf="items.length === 0"
+            class="mt-5 flex flex-col items-center justify-center rounded-lg border border-dashed border-slate-300 bg-slate-50 px-6 py-10 text-center"
+          >
+            <div
+              class="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-white shadow-sm"
+            >
+              <svg
+                class="h-6 w-6 text-slate-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 6v12m6-6H6"
+                />
+              </svg>
+            </div>
+
+            <p class="text-sm font-medium text-slate-700">No products added</p>
+
+            <p class="mt-1 text-xs text-slate-500">Select a product above to add it to the sale.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================================================= -->
+      <!-- REMARKS + TOTALS -->
+      <!-- ================================================= -->
+
+      <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <!-- REMARKS -->
+
+        <div>
+          <label class="mb-2 block text-sm font-medium text-slate-700"> Remarks </label>
+
+          <textarea
+            rows="6"
+            placeholder="Optional remarks..."
+            [formControl]="saleForm.controls.remarks"
+            class="w-full resize-none rounded-lg border border-slate-300 px-3 py-2.5 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+          >
+          </textarea>
+        </div>
+
+        <!-- TOTALS -->
+
+        <div class="rounded-xl bg-slate-50 p-5">
+          <h3 class="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-700">
+            Sale Summary
+          </h3>
+
+          <div class="space-y-3">
+            <div class="flex items-center justify-between text-sm">
+              <span class="text-slate-500"> Sub Total </span>
+
+              <span class="font-medium text-slate-800">
+                ₹{{ getSubTotal() | number: '1.2-2' }}
+              </span>
+            </div>
+
+            <div class="flex items-center justify-between text-sm">
+              <span class="text-slate-500"> Item Discount </span>
+
+              <span class="font-medium text-slate-800">
+                ₹{{ getItemDiscount() | number: '1.2-2' }}
+              </span>
+            </div>
+
+            <div class="flex items-center justify-between gap-4">
+              <label class="text-sm text-slate-500"> Sale Discount </label>
+
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                [formControl]="saleForm.controls.discount"
+                class="w-28 rounded-lg border border-slate-300 bg-white px-3 py-2 text-right text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+              />
+            </div>
+
+            <div class="flex items-center justify-between text-sm">
+              <span class="text-slate-500"> Item Tax </span>
+
+              <span class="font-medium text-slate-800">
+                ₹{{ getItemTax() | number: '1.2-2' }}
+              </span>
+            </div>
+
+            <div class="flex items-center justify-between gap-4">
+              <label class="text-sm text-slate-500"> Sale Tax </label>
+
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                [formControl]="saleForm.controls.tax"
+                class="w-28 rounded-lg border border-slate-300 bg-white px-3 py-2 text-right text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+              />
+            </div>
+
+            <div class="my-4 border-t border-slate-200"></div>
+
+            <div class="flex items-center justify-between">
+              <span class="text-base font-semibold text-slate-900"> Grand Total </span>
+
+              <span class="text-xl font-bold text-indigo-600">
+                ₹{{ getGrandTotal() | number: '1.2-2' }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================================================= -->
+      <!-- ACTIONS -->
+      <!-- ================================================= -->
+
+      <div
+        class="flex flex-col-reverse gap-3 border-t border-slate-200 pt-5 sm:flex-row sm:justify-end"
+      >
+        <button
+          type="button"
+          (click)="closeForm()"
+          [disabled]="isSubmitting"
+          class="rounded-lg border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          Cancel
+        </button>
+
+        <button
+          type="button"
+          (click)="createSale()"
+          [disabled]="isSubmitting"
+          class="rounded-lg bg-indigo-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          <span *ngIf="!isSubmitting"> Create Sale </span>
+
+          <span *ngIf="isSubmitting" class="inline-flex items-center gap-2">
+            <span
+              class="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white"
+            ></span>
+
+            Creating...
+          </span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================== -->
+  <!-- NEW CUSTOMER MODAL -->
+  <!-- ===================================================== -->
+
+  <div
+    *ngIf="showCustomerForm"
+    class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-sm"
+  >
+    <div class="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white shadow-2xl">
+      <!-- MODAL HEADER -->
+
+      <div class="flex items-center justify-between border-b border-slate-200 px-5 py-4 sm:px-6">
+        <div>
+          <h2 class="text-lg font-semibold text-slate-900">Add New Customer</h2>
+
+          <p class="mt-1 text-sm text-slate-500">Add a customer or firm for this sale.</p>
+        </div>
+
+        <button
+          type="button"
+          (click)="closeCustomerForm()"
+          [disabled]="isCustomerSubmitting"
+          class="flex h-9 w-9 items-center justify-center rounded-lg text-xl text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+        >
+          ×
+        </button>
+      </div>
+
+      <!-- CUSTOMER ERROR -->
+
+      <div
+        *ngIf="customerErrorMessage"
+        class="mx-5 mt-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 sm:mx-6"
+      >
+        {{ customerErrorMessage }}
+      </div>
+
+      <!-- CUSTOMER FORM -->
+
+      <form [formGroup]="customerForm" (ngSubmit)="createCustomer()" class="space-y-5 p-5 sm:p-6">
+        <!-- NAME -->
+
+        <div>
+          <label class="mb-2 block text-sm font-medium text-slate-700">
+            Customer / Firm Name
+            <span class="text-red-500">*</span>
+          </label>
+
+          <input
+            type="text"
+            placeholder="e.g. ABC Trading"
+            formControlName="name"
+            class="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none transition placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+          />
+
+          <p
+            *ngIf="customerForm.controls.name.touched && customerForm.controls.name.invalid"
+            class="mt-1.5 text-xs text-red-600"
+          >
+            Customer / Firm name is required.
+          </p>
+        </div>
+
+        <!-- PHONE + EMAIL -->
+
+        <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
+          <!-- PHONE -->
+
+          <div>
+            <label class="mb-2 block text-sm font-medium text-slate-700"> Phone </label>
+
+            <input
+              type="text"
+              placeholder="9876543210"
+              formControlName="phone"
+              class="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none transition placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+            />
+          </div>
+
+          <!-- EMAIL -->
+
+          <div>
+            <label class="mb-2 block text-sm font-medium text-slate-700"> Email </label>
+
+            <input
+              type="email"
+              placeholder="customer@example.com"
+              formControlName="email"
+              class="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none transition placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+            />
+
+            <p
+              *ngIf="customerForm.controls.email.touched && customerForm.controls.email.invalid"
+              class="mt-1.5 text-xs text-red-600"
+            >
+              Please enter a valid email.
+            </p>
+          </div>
+        </div>
+
+        <!-- GSTIN -->
+
+        <div>
+          <label class="mb-2 block text-sm font-medium text-slate-700"> GSTIN </label>
+
+          <input
+            type="text"
+            placeholder="24ABCDE1234F1Z5"
+            formControlName="gstin"
+            class="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm uppercase outline-none transition placeholder:normal-case placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+          />
+        </div>
+
+        <!-- ADDRESS -->
+
+        <div>
+          <label class="mb-2 block text-sm font-medium text-slate-700"> Address </label>
+
+          <textarea
+            rows="4"
+            placeholder="Customer / Firm address"
+            formControlName="address"
+            class="w-full resize-none rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none transition placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+          >
+          </textarea>
+        </div>
+
+        <!-- MODAL ACTIONS -->
+
+        <div
+          class="flex flex-col-reverse gap-3 border-t border-slate-200 pt-5 sm:flex-row sm:justify-end"
+        >
+          <button
+            type="button"
+            (click)="closeCustomerForm()"
+            [disabled]="isCustomerSubmitting"
+            class="rounded-lg border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50"
+          >
+            Cancel
+          </button>
+
+          <button
+            type="submit"
+            [disabled]="isCustomerSubmitting"
+            class="rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <span *ngIf="!isCustomerSubmitting"> Create Customer </span>
+
+            <span *ngIf="isCustomerSubmitting" class="inline-flex items-center gap-2">
+              <span
+                class="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white"
+              ></span>
+
+              Creating...
+            </span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===================================================== -->
+  <!-- SALE DETAILS -->
+  <!-- ===================================================== -->
+
+  <div *ngIf="selectedSale" class="rounded-xl border border-slate-200 bg-white shadow-sm">
+    <!-- HEADER -->
+
+    <div class="flex items-center justify-between border-b border-slate-200 px-5 py-4 sm:px-6">
+      <div>
+        <div class="flex flex-wrap items-center gap-3">
+          <h2 class="text-xl font-bold text-slate-900">
+            {{ selectedSale.invoiceNumber }}
+          </h2>
+
+          <span
+            class="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700"
+          >
+            {{ selectedSale.status }}
+          </span>
+        </div>
+
+        <p class="mt-1 text-sm text-slate-500">Sale details and invoice information</p>
+      </div>
+
+      <button
+        type="button"
+        (click)="closeDetails()"
+        class="flex h-9 w-9 items-center justify-center rounded-lg text-xl text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+      >
+        ×
+      </button>
+    </div>
+
+    <div class="space-y-6 p-5 sm:p-6">
+      <!-- DETAILS -->
+
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+        <div class="rounded-lg bg-slate-50 p-4">
+          <p class="text-xs font-medium uppercase tracking-wide text-slate-400">Invoice</p>
+
+          <p class="mt-1 font-semibold text-slate-900">
+            {{ selectedSale.invoiceNumber }}
+          </p>
+          <button
+            type="button"
+            *ngIf="selectedSale"
+            [routerLink]="['/sales', selectedSale.id, 'bill']"
+            class="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800"
+          >
+            Generate Bill
+          </button>
+        </div>
+
+        <div class="rounded-lg bg-slate-50 p-4">
+          <p class="text-xs font-medium uppercase tracking-wide text-slate-400">Customer</p>
+
+          <p class="mt-1 font-semibold text-slate-900">
+            {{ getCustomerName(selectedSale.customerId) }}
+          </p>
+        </div>
+
+        <div class="rounded-lg bg-slate-50 p-4">
+          <p class="text-xs font-medium uppercase tracking-wide text-slate-400">Warehouse</p>
+
+          <p class="mt-1 font-semibold text-slate-900">
+            {{ selectedSale.warehouseName }}
+          </p>
+        </div>
+
+        <div class="rounded-lg bg-slate-50 p-4">
+          <p class="text-xs font-medium uppercase tracking-wide text-slate-400">Date</p>
+
+          <p class="mt-1 font-semibold text-slate-900">
+            {{ selectedSale.saleDate | date: 'dd MMM yyyy' }}
+          </p>
+        </div>
+
+        <div class="rounded-lg bg-slate-50 p-4">
+          <p class="text-xs font-medium uppercase tracking-wide text-slate-400">Items</p>
+
+          <p class="mt-1 font-semibold text-slate-900">
+            {{ getTotalItems(selectedSale) }}
+          </p>
+        </div>
+      </div>
+
+      <!-- ITEMS -->
+
+      <div>
+        <h3 class="mb-3 text-base font-semibold text-slate-900">Sale Items</h3>
+
+        <div class="overflow-x-auto rounded-lg border border-slate-200">
+          <table class="min-w-[750px] w-full divide-y divide-slate-200">
+            <thead class="bg-slate-50">
+              <tr>
+                <th
+                  class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500"
+                >
+                  Product
+                </th>
+
+                <th
+                  class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500"
+                >
+                  SKU
+                </th>
+
+                <th
+                  class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500"
+                >
+                  Qty
+                </th>
+
+                <th
+                  class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500"
+                >
+                  Unit Price
+                </th>
+
+                <th
+                  class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500"
+                >
+                  Discount
+                </th>
+
+                <th
+                  class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500"
+                >
+                  Tax
+                </th>
+
+                <th
+                  class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500"
+                >
+                  Total
+                </th>
+              </tr>
+            </thead>
+
+            <tbody class="divide-y divide-slate-100">
+              <tr *ngFor="let item of selectedSale.items" class="hover:bg-slate-50">
+                <td class="px-4 py-4 font-medium text-slate-800">
+                  {{ item.productName }}
+                </td>
+
+                <td class="px-4 py-4 text-sm text-slate-500">
+                  {{ item.sku }}
+                </td>
+
+                <td class="px-4 py-4 text-right text-sm text-slate-600">
+                  {{ item.quantity }}
+                </td>
+
+                <td class="px-4 py-4 text-right text-sm text-slate-600">
+                  ₹{{ item.unitPrice | number: '1.2-2' }}
+                </td>
+
+                <td class="px-4 py-4 text-right text-sm text-slate-600">
+                  ₹{{ item.discount | number: '1.2-2' }}
+                </td>
+
+                <td class="px-4 py-4 text-right text-sm text-slate-600">
+                  ₹{{ item.tax | number: '1.2-2' }}
+                </td>
+
+                <td class="px-4 py-4 text-right font-semibold text-slate-900">
+                  ₹{{ item.total | number: '1.2-2' }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TOTAL SUMMARY -->
+
+      <div class="flex justify-end">
+        <div class="w-full max-w-md rounded-xl bg-slate-50 p-5">
+          <div class="space-y-3">
+            <div class="flex justify-between text-sm">
+              <span class="text-slate-500"> Sub Total </span>
+
+              <span class="font-medium text-slate-800">
+                ₹{{ selectedSale.subTotal | number: '1.2-2' }}
+              </span>
+            </div>
+
+            <div class="flex justify-between text-sm">
+              <span class="text-slate-500"> Discount </span>
+
+              <span class="font-medium text-slate-800">
+                ₹{{ selectedSale.discount | number: '1.2-2' }}
+              </span>
+            </div>
+
+            <div class="flex justify-between text-sm">
+              <span class="text-slate-500"> Tax </span>
+
+              <span class="font-medium text-slate-800">
+                ₹{{ selectedSale.tax | number: '1.2-2' }}
+              </span>
+            </div>
+
+            <div class="border-t border-slate-200 pt-3">
+              <div class="flex items-center justify-between">
+                <span class="text-base font-semibold text-slate-900"> Grand Total </span>
+
+                <span class="text-xl font-bold text-indigo-600">
+                  ₹{{ selectedSale.grandTotal | number: '1.2-2' }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- REMARKS -->
+
+      <div *ngIf="selectedSale.remarks" class="rounded-lg border border-slate-200 bg-slate-50 p-4">
+        <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">Remarks</p>
+
+        <p class="mt-2 text-sm text-slate-700">
+          {{ selectedSale.remarks }}
+        </p>
+      </div>
+
+      <!-- BACK -->
+
+      <div class="border-t border-slate-200 pt-5">
+        <button
+          type="button"
+          (click)="closeDetails()"
+          class="rounded-lg border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+        >
+          ← Back to Sales
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

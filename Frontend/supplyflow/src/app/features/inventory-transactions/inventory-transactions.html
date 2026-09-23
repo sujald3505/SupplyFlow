@@ -1,0 +1,863 @@
+<div class="space-y-6">
+
+  <!-- HEADER -->
+  <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+
+    <div>
+      <div class="mb-2 flex items-center gap-2 text-sm font-medium text-blue-600">
+        <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50">
+          ↔
+        </span>
+        Inventory
+      </div>
+
+      <h1 class="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
+        Inventory Transactions
+      </h1>
+
+      <p class="mt-1 text-sm text-slate-500 sm:text-base">
+        Track all stock movements across your warehouses.
+      </p>
+    </div>
+
+    <div class="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
+
+      <button
+        type="button"
+        (click)="refresh()"
+        class="inline-flex flex-1 items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 sm:flex-none">
+
+        ↻
+        Refresh
+
+      </button>
+
+      <button
+        type="button"
+        (click)="openAddForm()"
+        class="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 sm:flex-none">
+
+        +
+        Add Transaction
+
+      </button>
+
+    </div>
+
+  </div>
+
+
+  <!-- ERROR -->
+  @if (errorMessage) {
+
+    <div
+      class="flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 p-4 text-red-700">
+
+      <div
+        class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-red-100 font-bold text-red-600">
+        !
+      </div>
+
+      <div>
+        <p class="font-semibold">
+          Something went wrong
+        </p>
+
+        <p class="mt-1 text-sm">
+          {{ errorMessage }}
+        </p>
+      </div>
+
+    </div>
+
+  }
+
+
+  <!-- SUMMARY -->
+  <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+
+    <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div class="flex items-center justify-between">
+
+        <div>
+          <p class="text-sm font-medium text-slate-500">
+            Total Transactions
+          </p>
+
+          <p class="mt-2 text-2xl font-bold text-slate-900">
+            {{ filteredTransactions.length }}
+          </p>
+        </div>
+
+        <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-xl">
+          ↔
+        </div>
+
+      </div>
+    </div>
+
+
+    <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div class="flex items-center justify-between">
+
+        <div>
+          <p class="text-sm font-medium text-slate-500">
+            Stock In
+          </p>
+
+          <p class="mt-2 text-2xl font-bold text-green-600">
+            {{ filteredTransactions.filter(t => t.transactionType.toLowerCase().replace(' ', '') === 'stockin').length }}
+          </p>
+        </div>
+
+        <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-green-50 text-xl">
+          ↓
+        </div>
+
+      </div>
+    </div>
+
+
+    <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div class="flex items-center justify-between">
+
+        <div>
+          <p class="text-sm font-medium text-slate-500">
+            Stock Out
+          </p>
+
+          <p class="mt-2 text-2xl font-bold text-red-600">
+            {{ filteredTransactions.filter(t => t.transactionType.toLowerCase().replace(' ', '') === 'stockout').length }}
+          </p>
+        </div>
+
+        <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-red-50 text-xl">
+          ↑
+        </div>
+
+      </div>
+    </div>
+
+
+    <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div class="flex items-center justify-between">
+
+        <div>
+          <p class="text-sm font-medium text-slate-500">
+            Warehouses
+          </p>
+
+          <p class="mt-2 text-2xl font-bold text-slate-900">
+            {{ warehouses.length }}
+          </p>
+        </div>
+
+        <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-indigo-50 text-xl">
+          🏢
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+
+  <!-- FILTERS -->
+  <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+
+    <div class="mb-5">
+      <h2 class="text-base font-semibold text-slate-900">
+        Transaction Filters
+      </h2>
+
+      <p class="mt-1 text-sm text-slate-500">
+        Search and filter stock movement records.
+      </p>
+    </div>
+
+
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+
+      <!-- SEARCH -->
+      <div>
+
+        <label class="mb-2 block text-sm font-semibold text-slate-700">
+          Search
+        </label>
+
+        <div class="relative">
+
+          <span
+            class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
+            🔍
+          </span>
+
+          <input
+            type="text"
+            [(ngModel)]="searchTerm"
+            (input)="applyFilters()"
+            placeholder="Product, SKU, warehouse..."
+            class="w-full rounded-xl border border-slate-300 bg-slate-50 py-3 pl-11 pr-4 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-50">
+
+        </div>
+
+      </div>
+
+
+      <!-- WAREHOUSE -->
+      <div>
+
+        <label class="mb-2 block text-sm font-semibold text-slate-700">
+          Warehouse
+        </label>
+
+        <select
+          [(ngModel)]="selectedWarehouseId"
+          (change)="applyFilters()"
+          class="w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-50">
+
+          <option [ngValue]="0">
+            All Warehouses
+          </option>
+
+          @for (
+            warehouse of warehouses;
+            track warehouse.id
+          ) {
+
+            <option [ngValue]="warehouse.id">
+              {{ warehouse.name }}
+            </option>
+
+          }
+
+        </select>
+
+      </div>
+
+
+      <!-- PRODUCT -->
+      <div>
+
+        <label class="mb-2 block text-sm font-semibold text-slate-700">
+          Product
+        </label>
+
+        <select
+          [(ngModel)]="selectedProductId"
+          (change)="applyFilters()"
+          class="w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-50">
+
+          <option [ngValue]="0">
+            All Products
+          </option>
+
+          @for (
+            product of products;
+            track product.id
+          ) {
+
+            <option [ngValue]="product.id">
+              {{ product.name }}
+            </option>
+
+          }
+
+        </select>
+
+      </div>
+
+
+      <!-- TYPE -->
+      <div>
+
+        <label class="mb-2 block text-sm font-semibold text-slate-700">
+          Transaction Type
+        </label>
+
+        <select
+          [(ngModel)]="selectedTransactionType"
+          (change)="applyFilters()"
+          class="w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-50">
+
+          <option value="">
+            All Transaction Types
+          </option>
+
+          <option value="StockIn">
+            Stock In
+          </option>
+
+          <option value="StockOut">
+            Stock Out
+          </option>
+
+          <option value="Adjustment">
+            Adjustment
+          </option>
+
+        </select>
+
+      </div>
+
+    </div>
+
+
+    <div class="mt-4 flex justify-end">
+
+      <button
+        type="button"
+        (click)="resetFilters()"
+        class="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 sm:w-auto">
+
+        ↺
+        Reset Filters
+
+      </button>
+
+    </div>
+
+  </div>
+
+
+  <!-- LOADING -->
+  @if (isLoading) {
+
+    <div class="rounded-2xl border border-slate-200 bg-white p-10 text-center shadow-sm">
+
+      <div
+        class="mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-4 border-slate-200 border-t-blue-600">
+      </div>
+
+      <p class="font-semibold text-slate-800">
+        Loading transactions
+      </p>
+
+      <p class="mt-1 text-sm text-slate-500">
+        Fetching the latest inventory movements...
+      </p>
+
+    </div>
+
+  }
+
+
+  <!-- TABLE -->
+  @if (!isLoading) {
+
+    <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+
+      <div
+        class="flex flex-col gap-2 border-b border-slate-200 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+
+        <div>
+          <h2 class="font-semibold text-slate-900">
+            Transaction History
+          </h2>
+
+          <p class="mt-1 text-xs text-slate-500 sm:text-sm">
+            Showing {{ filteredTransactions.length }} transaction(s)
+          </p>
+        </div>
+
+        <span
+          class="inline-flex w-fit rounded-full bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700">
+
+          Live Inventory Records
+
+        </span>
+
+      </div>
+
+
+      <div class="overflow-x-auto">
+
+        <table class="w-full min-w-[1250px]">
+
+          <thead class="bg-slate-50">
+
+            <tr class="border-b border-slate-200 text-left">
+
+              <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500">
+                Date
+              </th>
+
+              <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500">
+                Product
+              </th>
+
+              <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500">
+                Warehouse
+              </th>
+
+              <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500">
+                Type
+              </th>
+
+              <th class="px-6 py-4 text-right text-xs font-bold uppercase tracking-wider text-slate-500">
+                Quantity
+              </th>
+
+              <th class="px-6 py-4 text-right text-xs font-bold uppercase tracking-wider text-slate-500">
+                Previous
+              </th>
+
+              <th class="px-6 py-4 text-right text-xs font-bold uppercase tracking-wider text-slate-500">
+                New
+              </th>
+
+              <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500">
+                Reference
+              </th>
+
+              <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500">
+                Remarks
+              </th>
+
+            </tr>
+
+          </thead>
+
+
+          <tbody class="divide-y divide-slate-100">
+
+            @for (
+              transaction of filteredTransactions;
+              track transaction.id
+            ) {
+
+              <tr class="group transition hover:bg-slate-50">
+
+                <!-- DATE -->
+                <td class="whitespace-nowrap px-6 py-4">
+
+                  <p class="text-sm font-medium text-slate-800">
+                    {{ transaction.createdAt | date:'dd MMM yyyy' }}
+                  </p>
+
+                  <p class="mt-0.5 text-xs text-slate-400">
+                    {{ transaction.createdAt | date:'hh:mm a' }}
+                  </p>
+
+                </td>
+
+
+                <!-- PRODUCT -->
+                <td class="px-6 py-4">
+
+                  <div class="flex items-center gap-3">
+
+                    <div
+                      class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 font-bold text-blue-600">
+
+                      {{ transaction.productName.charAt(0).toUpperCase() }}
+
+                    </div>
+
+                    <div class="min-w-0">
+
+                      <p class="truncate font-semibold text-slate-900">
+                        {{ transaction.productName }}
+                      </p>
+
+                      <span
+                        class="mt-1 inline-flex rounded-md bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600">
+
+                        {{ transaction.sku }}
+
+                      </span>
+
+                    </div>
+
+                  </div>
+
+                </td>
+
+
+                <!-- WAREHOUSE -->
+                <td class="px-6 py-4">
+
+                  <div class="flex items-center gap-2 text-sm font-medium text-slate-700">
+
+                    <span
+                      class="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
+                      🏢
+                    </span>
+
+                    {{ transaction.warehouseName }}
+
+                  </div>
+
+                </td>
+
+
+                <!-- TYPE -->
+                <td class="px-6 py-4">
+
+                  <span
+                    class="inline-flex rounded-full px-3 py-1.5 text-xs font-bold"
+                    [ngClass]="getTransactionTypeClass(transaction.transactionType)">
+
+                    {{ transaction.transactionType }}
+
+                  </span>
+
+                </td>
+
+
+                <!-- QUANTITY -->
+                <td class="px-6 py-4 text-right">
+
+                  <span class="text-sm font-bold text-slate-900">
+                    {{ transaction.quantity }}
+                  </span>
+
+                </td>
+
+
+                <!-- PREVIOUS -->
+                <td class="px-6 py-4 text-right">
+
+                  <span class="text-sm text-slate-500">
+                    {{ transaction.previousQuantity }}
+                  </span>
+
+                </td>
+
+
+                <!-- NEW -->
+                <td class="px-6 py-4 text-right">
+
+                  <span
+                    class="inline-flex min-w-[70px] justify-center rounded-lg bg-blue-50 px-3 py-2 text-sm font-bold text-blue-700">
+
+                    {{ transaction.newQuantity }}
+
+                  </span>
+
+                </td>
+
+
+                <!-- REFERENCE -->
+                <td class="px-6 py-4">
+
+                  <span class="text-sm font-medium text-slate-600">
+                    {{ transaction.referenceNumber || '-' }}
+                  </span>
+
+                </td>
+
+
+                <!-- REMARKS -->
+                <td class="max-w-xs px-6 py-4">
+
+                  <span
+                    class="block truncate text-sm text-slate-500"
+                    [title]="transaction.remarks || ''">
+
+                    {{ transaction.remarks || '-' }}
+
+                  </span>
+
+                </td>
+
+              </tr>
+
+            } @empty {
+
+              <tr>
+
+                <td colspan="9" class="px-6 py-14 text-center">
+
+                  <div
+                    class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-2xl">
+                    ↔
+                  </div>
+
+                  <p class="mt-4 font-semibold text-slate-800">
+                    No inventory transactions found
+                  </p>
+
+                  <p class="mt-1 text-sm text-slate-500">
+                    Try changing your search or filter criteria.
+                  </p>
+
+                </td>
+
+              </tr>
+
+            }
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+    </div>
+
+  }
+
+
+  <!-- ADD TRANSACTION MODAL -->
+  @if (showForm) {
+
+    <div
+      class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-3 backdrop-blur-sm sm:p-5">
+
+      <div
+        class="max-h-[95vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white shadow-2xl">
+
+        <!-- MODAL HEADER -->
+        <div
+          class="sticky top-0 z-10 flex items-center justify-between border-b border-slate-200 bg-white px-5 py-4 sm:px-6">
+
+          <div>
+
+            <div class="flex items-center gap-2">
+
+              <div
+                class="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
+                +
+              </div>
+
+              <div>
+
+                <h2 class="text-lg font-bold text-slate-900 sm:text-xl">
+                  Add Inventory Transaction
+                </h2>
+
+                <p class="mt-0.5 text-xs text-slate-500">
+                  Record a stock movement.
+                </p>
+
+              </div>
+
+            </div>
+
+          </div>
+
+
+          <button
+            type="button"
+            (click)="closeForm()"
+            class="flex h-9 w-9 items-center justify-center rounded-lg text-xl text-slate-400 transition hover:bg-slate-100 hover:text-slate-700">
+
+            ×
+
+          </button>
+
+        </div>
+
+
+        <!-- FORM -->
+        <form
+          [formGroup]="transactionForm"
+          (ngSubmit)="onSubmit()"
+          class="space-y-5 p-5 sm:p-6">
+
+
+          <!-- WAREHOUSE + PRODUCT -->
+          <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
+
+            <!-- WAREHOUSE -->
+            <div>
+
+              <label class="mb-2 block text-sm font-semibold text-slate-700">
+                Warehouse *
+              </label>
+
+              <select
+                formControlName="warehouseId"
+                class="w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-50">
+
+                <option [ngValue]="0">
+                  Select Warehouse
+                </option>
+
+                @for (
+                  warehouse of warehouses;
+                  track warehouse.id
+                ) {
+
+                  <option [ngValue]="warehouse.id">
+                    {{ warehouse.name }}
+                  </option>
+
+                }
+
+              </select>
+
+            </div>
+
+
+            <!-- PRODUCT -->
+            <div>
+
+              <label class="mb-2 block text-sm font-semibold text-slate-700">
+                Product *
+              </label>
+
+              <select
+                formControlName="productId"
+                class="w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-50">
+
+                <option [ngValue]="0">
+                  Select Product
+                </option>
+
+                @for (
+                  product of products;
+                  track product.id
+                ) {
+
+                  <option [ngValue]="product.id">
+                    {{ product.name }} ({{ product.sku }})
+                  </option>
+
+                }
+
+              </select>
+
+            </div>
+
+          </div>
+
+
+          <!-- TYPE -->
+          <div>
+
+            <label class="mb-2 block text-sm font-semibold text-slate-700">
+              Transaction Type *
+            </label>
+
+            <select
+              formControlName="transactionType"
+              class="w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-50">
+
+              @for (
+                type of transactionTypes;
+                track type.value
+              ) {
+
+                <option [ngValue]="type.value">
+                  {{ type.label }}
+                </option>
+
+              }
+
+            </select>
+
+          </div>
+
+
+          <!-- QUANTITY -->
+          <div>
+
+            <label class="mb-2 block text-sm font-semibold text-slate-700">
+              Quantity *
+            </label>
+
+            <input
+              type="number"
+              min="0.01"
+              step="0.01"
+              formControlName="quantity"
+              placeholder="Enter quantity"
+              class="w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-50">
+
+            @if (
+              transactionForm.controls.quantity.touched &&
+              transactionForm.controls.quantity.invalid
+            ) {
+
+              <p class="mt-1.5 text-xs font-medium text-red-500">
+                Quantity must be greater than 0.
+              </p>
+
+            }
+
+          </div>
+
+
+          <!-- REFERENCE -->
+          <div>
+
+            <label class="mb-2 block text-sm font-semibold text-slate-700">
+              Reference Number
+            </label>
+
+            <input
+              type="text"
+              formControlName="referenceNumber"
+              placeholder="Optional reference number"
+              class="w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-50">
+
+          </div>
+
+
+          <!-- REMARKS -->
+          <div>
+
+            <label class="mb-2 block text-sm font-semibold text-slate-700">
+              Remarks
+            </label>
+
+            <textarea
+              rows="4"
+              formControlName="remarks"
+              placeholder="Optional remarks"
+              class="w-full resize-none rounded-xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-50"></textarea>
+
+          </div>
+
+
+          <!-- BUTTONS -->
+          <div
+            class="flex flex-col-reverse gap-3 border-t border-slate-100 pt-5 sm:flex-row sm:justify-end">
+
+            <button
+              type="button"
+              (click)="closeForm()"
+              class="w-full rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 sm:w-auto">
+
+              Cancel
+
+            </button>
+
+            <button
+              type="submit"
+              [disabled]="isSubmitting"
+              class="w-full rounded-xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto">
+
+              @if (isSubmitting) {
+
+                <span class="inline-flex items-center gap-2">
+
+                  <span
+                    class="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white">
+                  </span>
+
+                  Saving...
+
+                </span>
+
+              } @else {
+
+                Save Transaction
+
+              }
+
+            </button>
+
+          </div>
+
+        </form>
+
+      </div>
+
+    </div>
+
+  }
+
+</div>

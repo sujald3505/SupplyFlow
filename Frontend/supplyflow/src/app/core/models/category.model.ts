@@ -1,0 +1,11 @@
+export interface Category {
+  id: number;
+  name: string;
+  description?: string;
+  isActive: boolean;
+}
+
+export interface CreateCategoryRequest {
+  name: string;
+  description?: string;
+}

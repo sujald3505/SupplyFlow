@@ -1,0 +1,959 @@
+<div class="min-h-screen bg-slate-50 p-4 sm:p-5 lg:p-6">
+  <!-- ==================== HEADER ==================== -->
+  <div class="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+    <div>
+      <div class="mb-2 flex items-center gap-2 text-xs font-medium text-blue-600">
+        <span>Procurement</span>
+        <span class="text-slate-300">/</span>
+        <span class="text-slate-400">Purchase Orders</span>
+      </div>
+
+      <h1 class="text-2xl font-bold tracking-tight text-slate-800 sm:text-3xl">Purchase Orders</h1>
+
+      <p class="mt-1 text-sm text-slate-500">Manage and track supplier purchase orders.</p>
+    </div>
+
+    <button
+      *ngIf="canManagePurchaseOrder()"
+      type="button"
+      (click)="openCreateModal()"
+      class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 sm:w-auto"
+    >
+      <span class="text-lg leading-none">+</span>
+      Create Purchase Order
+    </button>
+  </div>
+
+  <!-- ==================== MESSAGES ==================== -->
+  @if (successMessage) {
+    <div
+      class="mb-5 flex items-start justify-between gap-4 rounded-xl border border-green-200 bg-green-50 px-4 py-3.5 text-sm text-green-700 shadow-sm"
+    >
+      <div class="flex items-start gap-3">
+        <div
+          class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-green-100 text-xs font-bold text-green-700"
+        >
+          ✓
+        </div>
+
+        <span class="pt-0.5">{{ successMessage }}</span>
+      </div>
+
+      <button
+        type="button"
+        (click)="successMessage = ''"
+        class="text-xl leading-none text-green-500 transition hover:text-green-800"
+      >
+        ×
+      </button>
+    </div>
+  }
+
+  @if (errorMessage) {
+    <div
+      class="mb-5 flex items-start justify-between gap-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3.5 text-sm text-red-700 shadow-sm"
+    >
+      <div class="flex items-start gap-3">
+        <div
+          class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-red-100 text-xs font-bold text-red-700"
+        >
+          !
+        </div>
+
+        <span class="pt-0.5">{{ errorMessage }}</span>
+      </div>
+
+      <button
+        type="button"
+        (click)="errorMessage = ''"
+        class="text-xl leading-none text-red-500 transition hover:text-red-800"
+      >
+        ×
+      </button>
+    </div>
+  }
+
+  <!-- ==================== SUMMARY ==================== -->
+  <div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    <div
+      class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+    >
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">Total Orders</p>
+
+          <p class="mt-2 text-2xl font-bold text-slate-800">
+            {{ purchaseOrders.length }}
+          </p>
+        </div>
+
+        <div
+          class="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-xl text-blue-600"
+        >
+          📦
+        </div>
+      </div>
+    </div>
+
+    <div
+      class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+    >
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">Draft</p>
+
+          <p class="mt-2 text-2xl font-bold text-slate-800">
+            {{ purchaseOrders.filter((o) => o.status === 'Draft').length }}
+          </p>
+        </div>
+
+        <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-100 text-xl">
+          📝
+        </div>
+      </div>
+    </div>
+
+    <div
+      class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+    >
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">Sent</p>
+
+          <p class="mt-2 text-2xl font-bold text-slate-800">
+            {{ purchaseOrders.filter((o) => o.status === 'Sent').length }}
+          </p>
+        </div>
+
+        <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-xl">
+          📤
+        </div>
+      </div>
+    </div>
+
+    <div
+      class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+    >
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">Confirmed</p>
+
+          <p class="mt-2 text-2xl font-bold text-slate-800">
+            {{ purchaseOrders.filter((o) => o.status === 'Confirmed').length }}
+          </p>
+        </div>
+
+        <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-green-50 text-xl">
+          ✓
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== FILTERS ==================== -->
+  <div class="mb-6 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+    <div class="mb-4 flex items-center gap-2">
+      <div
+        class="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 text-sm text-blue-600"
+      >
+        🔎
+      </div>
+
+      <div>
+        <h2 class="text-sm font-semibold text-slate-800">Search & Filter</h2>
+
+        <p class="text-xs text-slate-400">Find purchase orders quickly.</p>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+      <!-- Search -->
+      <div>
+        <label class="mb-1.5 block text-sm font-medium text-slate-700"> Search </label>
+
+        <div class="relative">
+          <span class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+            🔍
+          </span>
+
+          <input
+            type="text"
+            [(ngModel)]="searchTerm"
+            (input)="applyFilters()"
+            placeholder="Search PO number, supplier or warehouse..."
+            class="w-full rounded-xl border border-slate-300 bg-slate-50 py-2.5 pl-10 pr-4 text-sm outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100"
+          />
+        </div>
+      </div>
+
+      <!-- Status -->
+      <div>
+        <label class="mb-1.5 block text-sm font-medium text-slate-700"> Status </label>
+
+        <select
+          [(ngModel)]="selectedStatus"
+          (change)="applyFilters()"
+          class="w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-2.5 text-sm outline-none transition focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100"
+        >
+          @for (status of statuses; track status) {
+            <option [value]="status">
+              {{ status }}
+            </option>
+          }
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== LOADING ==================== -->
+  @if (isLoading) {
+    <div class="rounded-2xl border border-slate-200 bg-white p-10 text-center shadow-sm">
+      <div
+        class="mx-auto h-9 w-9 animate-spin rounded-full border-4 border-slate-200 border-t-blue-600"
+      ></div>
+
+      <p class="mt-4 text-sm font-medium text-slate-600">Loading purchase orders...</p>
+
+      <p class="mt-1 text-xs text-slate-400">Please wait while we fetch your data.</p>
+    </div>
+  }
+
+  <!-- ==================== TABLE ==================== -->
+  @if (!isLoading) {
+    <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <!-- Table Header -->
+      <div
+        class="flex flex-col gap-2 border-b border-slate-200 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5"
+      >
+        <div>
+          <h2 class="text-base font-semibold text-slate-800">Purchase Order Directory</h2>
+
+          <p class="mt-0.5 text-xs text-slate-400">
+            {{ filteredPurchaseOrders.length }} order(s) found
+          </p>
+        </div>
+      </div>
+
+      <!-- Responsive Table -->
+      <div class="overflow-x-auto">
+        <table class="w-full min-w-[1050px] text-left text-sm">
+          <thead
+            class="border-b border-slate-200 bg-slate-50 text-xs uppercase tracking-wide text-slate-500"
+          >
+            <tr>
+              <th class="px-5 py-4 font-semibold">PO Number</th>
+
+              <th class="px-5 py-4 font-semibold">Supplier</th>
+
+              <th class="px-5 py-4 font-semibold">Warehouse</th>
+
+              <th class="px-5 py-4 font-semibold">Order Date</th>
+
+              <th class="px-5 py-4 font-semibold">Total Amount</th>
+
+              <th class="px-5 py-4 font-semibold">Status</th>
+
+              <th class="px-5 py-4 text-right font-semibold">Actions</th>
+            </tr>
+          </thead>
+
+          <tbody class="divide-y divide-slate-100">
+            @for (purchaseOrder of filteredPurchaseOrders; track purchaseOrder.id) {
+              <tr class="group transition hover:bg-slate-50">
+                <!-- PO Number -->
+                <td class="px-5 py-4">
+                  <div class="flex items-center gap-3">
+                    <div
+                      class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-sm font-bold text-blue-600"
+                    >
+                      PO
+                    </div>
+
+                    <div>
+                      <p class="font-semibold text-slate-800">
+                        {{ purchaseOrder.purchaseOrderNumber }}
+                      </p>
+
+                      <p class="mt-0.5 text-xs text-slate-400">Purchase Order</p>
+                    </div>
+                  </div>
+                </td>
+
+                <!-- Supplier -->
+                <td class="px-5 py-4">
+                  <p class="font-medium text-slate-700">
+                    {{ purchaseOrder.supplierName }}
+                  </p>
+                </td>
+
+                <!-- Warehouse -->
+                <td class="px-5 py-4">
+                  <p class="text-slate-600">
+                    {{ purchaseOrder.warehouseName }}
+                  </p>
+                </td>
+
+                <!-- Order Date -->
+                <td class="px-5 py-4">
+                  <p class="text-slate-600">
+                    {{ purchaseOrder.orderDate | date: 'dd MMM yyyy' }}
+                  </p>
+                </td>
+
+                <!-- Amount -->
+                <td class="px-5 py-4">
+                  <p class="font-semibold text-slate-800">
+                    ₹
+                    {{ purchaseOrder.totalAmount | number: '1.2-2' }}
+                  </p>
+                </td>
+
+                <!-- Status -->
+                <td class="px-5 py-4">
+                  <span
+                    [class]="
+                      'inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ' +
+                      getStatusClass(purchaseOrder.status)
+                    "
+                  >
+                    <span class="mr-1.5 h-1.5 w-1.5 rounded-full bg-current"></span>
+
+                    {{ purchaseOrder.status }}
+                  </span>
+                </td>
+
+                <!-- Actions -->
+                <td class="px-5 py-4">
+                  <div class="flex flex-wrap justify-end gap-2">
+                    <!-- View -->
+                    <button
+                      type="button"
+                      (click)="openViewModal(purchaseOrder)"
+                      class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-600 transition hover:border-slate-400 hover:bg-slate-50"
+                    >
+                      View
+                    </button>
+
+                    <!-- Send -->
+                    @if (canSend(purchaseOrder)) {
+                      <button
+                        type="button"
+                        [disabled]="isSubmitting"
+                        (click)="sendPurchaseOrder(purchaseOrder)"
+                        class="rounded-lg bg-blue-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        Send
+                      </button>
+                    }
+
+                    <!-- Confirm -->
+                    @if (canConfirm(purchaseOrder)) {
+                      <button
+                        type="button"
+                        [disabled]="isSubmitting"
+                        (click)="confirmPurchaseOrder(purchaseOrder)"
+                        class="rounded-lg bg-green-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        Confirm
+                      </button>
+                    }
+
+                    <!-- Cancel -->
+                    @if (canCancel(purchaseOrder)) {
+                      <button
+                        type="button"
+                        [disabled]="isSubmitting"
+                        (click)="cancelPurchaseOrder(purchaseOrder)"
+                        class="rounded-lg bg-red-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        Cancel
+                      </button>
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+
+            <!-- Empty -->
+            @if (filteredPurchaseOrders.length === 0) {
+              <tr>
+                <td colspan="7" class="px-5 py-14 text-center">
+                  <div class="mx-auto flex max-w-sm flex-col items-center">
+                    <div
+                      class="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-2xl"
+                    >
+                      📦
+                    </div>
+
+                    <h3 class="mt-4 text-sm font-semibold text-slate-700">
+                      No purchase orders found
+                    </h3>
+
+                    <p class="mt-1 text-xs text-slate-400">
+                      Try changing your search or status filter.
+                    </p>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
+
+  <!-- ==================== CREATE MODAL ==================== -->
+  @if (showCreateModal && canManagePurchaseOrder()) {
+    <div
+      class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-3 backdrop-blur-sm sm:p-5"
+    >
+      <div
+        class="flex max-h-[94vh] w-full max-w-5xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl"
+      >
+        <!-- Modal Header -->
+        <div
+          class="flex shrink-0 items-start justify-between gap-4 border-b border-slate-200 px-4 py-4 sm:px-6"
+        >
+          <div>
+            <div class="flex items-center gap-2">
+              <div
+                class="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-50 text-blue-600"
+              >
+                +
+              </div>
+
+              <div>
+                <h2 class="text-lg font-bold text-slate-800">Create Purchase Order</h2>
+
+                <p class="mt-0.5 text-xs text-slate-400">Create a new supplier purchase order.</p>
+              </div>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            (click)="closeCreateModal()"
+            class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-xl text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+          >
+            ×
+          </button>
+        </div>
+
+        <!-- Form -->
+        <form
+          [formGroup]="purchaseOrderForm"
+          (ngSubmit)="createPurchaseOrder()"
+          class="overflow-y-auto p-4 sm:p-6"
+        >
+          <!-- Basic Details -->
+          <div class="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 sm:p-5">
+            <div class="mb-5">
+              <h3 class="text-sm font-semibold text-slate-800">Order Information</h3>
+
+              <p class="mt-1 text-xs text-slate-400">
+                Select supplier, warehouse and delivery details.
+              </p>
+            </div>
+
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <!-- Supplier -->
+              <div>
+                <label class="mb-1.5 block text-sm font-medium text-slate-700"> Supplier * </label>
+
+                <select
+                  formControlName="supplierId"
+                  class="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                >
+                  <option [ngValue]="null">Select Supplier</option>
+
+                  @for (supplier of suppliers; track supplier.id) {
+                    <option [value]="supplier.id">
+                      {{ supplier.name }}
+                    </option>
+                  }
+                </select>
+
+                @if (
+                  purchaseOrderForm.get('supplierId')?.touched &&
+                  purchaseOrderForm.get('supplierId')?.invalid
+                ) {
+                  <p class="mt-1 text-xs text-red-600">Supplier is required.</p>
+                }
+              </div>
+
+              <!-- Warehouse -->
+              <div>
+                <label class="mb-1.5 block text-sm font-medium text-slate-700"> Warehouse * </label>
+
+                <select
+                  formControlName="warehouseId"
+                  class="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                >
+                  <option [ngValue]="null">Select Warehouse</option>
+
+                  @for (warehouse of warehouses; track warehouse.id) {
+                    <option [value]="warehouse.id">
+                      {{ warehouse.name }}
+                    </option>
+                  }
+                </select>
+
+                @if (
+                  purchaseOrderForm.get('warehouseId')?.touched &&
+                  purchaseOrderForm.get('warehouseId')?.invalid
+                ) {
+                  <p class="mt-1 text-xs text-red-600">Warehouse is required.</p>
+                }
+              </div>
+
+              <!-- Expected Delivery -->
+              <div>
+                <label class="mb-1.5 block text-sm font-medium text-slate-700">
+                  Expected Delivery Date
+                </label>
+
+                <input
+                  type="date"
+                  formControlName="expectedDeliveryDate"
+                  class="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                />
+              </div>
+
+              <!-- Purchase Request -->
+              <div>
+                <label class="mb-1.5 block text-sm font-medium text-slate-700">
+                  Purchase Request ID
+                </label>
+
+                <select
+                  formControlName="purchaseRequestId"
+                  (change)="onPurchaseRequestChange()"
+                  class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                >
+                  <option [ngValue]="null">Select Approved Purchase Request</option>
+
+                  <option *ngFor="let request of approvedPurchaseRequests" [ngValue]="request.id">
+                    {{ request.requestNumber }}
+                    — {{ request.requestedByUserName }}
+                  </option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Remarks -->
+            <div class="mt-4">
+              <label class="mb-1.5 block text-sm font-medium text-slate-700"> Remarks </label>
+
+              <textarea
+                formControlName="remarks"
+                rows="3"
+                placeholder="Enter remarks..."
+                class="w-full resize-none rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+              ></textarea>
+            </div>
+          </div>
+
+          <!-- ==================== ITEMS ==================== -->
+          <div class="mt-6">
+            <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h3 class="text-base font-bold text-slate-800">Order Items</h3>
+
+                <p class="mt-1 text-xs text-slate-400">Add products, quantities and unit prices.</p>
+              </div>
+
+              <button
+                type="button"
+                (click)="addItem()"
+                class="w-full rounded-xl border border-blue-200 bg-blue-50 px-4 py-2.5 text-sm font-semibold text-blue-600 transition hover:bg-blue-100 sm:w-auto"
+              >
+                + Add Item
+              </button>
+            </div>
+
+            <div formArrayName="items" class="space-y-4">
+              @for (item of items.controls; track $index; let i = $index) {
+                <div
+                  [formGroupName]="i"
+                  class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"
+                >
+                  <div class="mb-4 flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                      <span
+                        class="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-100 text-xs font-bold text-slate-600"
+                      >
+                        {{ i + 1 }}
+                      </span>
+
+                      <span class="text-sm font-semibold text-slate-700"> Item {{ i + 1 }} </span>
+                    </div>
+
+                    <button
+                      type="button"
+                      (click)="removeItem(i)"
+                      [disabled]="items.length === 1"
+                      class="rounded-lg border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                      Remove
+                    </button>
+                  </div>
+
+                  <div class="grid grid-cols-1 gap-4 md:grid-cols-12 md:items-end">
+                    <!-- Product -->
+                    <div class="md:col-span-5">
+                      <label class="mb-1.5 block text-sm font-medium text-slate-700">
+                        Product *
+                      </label>
+
+                      <select
+                        formControlName="productId"
+                        (change)="onProductChange(i)"
+                        class="w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-2.5 text-sm outline-none transition focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100"
+                      >
+                        <option [ngValue]="null">Select Product</option>
+
+                        @for (product of products; track product.id) {
+                          <option [value]="product.id">
+                            {{ product.name }}
+                            ({{ product.sku }})
+                          </option>
+                        }
+                      </select>
+                    </div>
+
+                    <!-- Quantity -->
+                    <div class="md:col-span-2">
+                      <label class="mb-1.5 block text-sm font-medium text-slate-700">
+                        Quantity *
+                      </label>
+
+                      <input
+                        type="number"
+                        min="0.01"
+                        step="0.01"
+                        formControlName="orderedQuantity"
+                        class="w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-2.5 text-sm outline-none transition focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100"
+                      />
+                    </div>
+
+                    <!-- Unit Price -->
+                    <div class="md:col-span-2">
+                      <label class="mb-1.5 block text-sm font-medium text-slate-700">
+                        Unit Price *
+                      </label>
+
+                      <div class="relative">
+                        <span
+                          class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-slate-400"
+                        >
+                          ₹
+                        </span>
+
+                        <input
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          formControlName="unitPrice"
+                          class="w-full rounded-xl border border-slate-300 bg-slate-50 py-2.5 pl-8 pr-3 text-sm outline-none transition focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100"
+                        />
+                      </div>
+                    </div>
+
+                    <!-- Total -->
+                    <div class="md:col-span-3">
+                      <label class="mb-1.5 block text-sm font-medium text-slate-700">
+                        Item Total
+                      </label>
+
+                      <div
+                        class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm font-bold text-slate-800"
+                      >
+                        ₹
+                        {{ calculateItemTotal(i) | number: '1.2-2' }}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+
+            <!-- Grand Total -->
+            <div class="mt-5 flex justify-stretch sm:justify-end">
+              <div
+                class="w-full rounded-2xl bg-slate-900 px-5 py-4 text-white shadow-sm sm:w-auto sm:min-w-[230px]"
+              >
+                <div class="flex items-center justify-between gap-8 sm:block">
+                  <div>
+                    <p class="text-xs font-medium uppercase tracking-wide text-slate-400">
+                      Total Amount
+                    </p>
+                  </div>
+
+                  <p class="mt-0 text-xl font-bold sm:mt-1 sm:text-2xl">
+                    ₹
+                    {{ calculateTotalAmount() | number: '1.2-2' }}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ==================== FOOTER ==================== -->
+          <div
+            class="mt-6 flex flex-col-reverse gap-3 border-t border-slate-200 pt-5 sm:flex-row sm:justify-end"
+          >
+            <button
+              type="button"
+              (click)="closeCreateModal()"
+              class="w-full rounded-xl border border-slate-300 px-5 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-50 sm:w-auto"
+            >
+              Cancel
+            </button>
+
+            <button
+              type="submit"
+              [disabled]="isSubmitting"
+              class="w-full rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
+            >
+              @if (isSubmitting) {
+                Creating...
+              } @else {
+                Create Purchase Order
+              }
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  <!-- ==================== VIEW MODAL ==================== -->
+  @if (showViewModal && selectedPurchaseOrder) {
+    <div
+      class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-3 backdrop-blur-sm sm:p-5"
+    >
+      <div
+        class="flex max-h-[94vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl"
+      >
+        <!-- Header -->
+        <div
+          class="flex shrink-0 items-start justify-between gap-4 border-b border-slate-200 px-4 py-4 sm:px-6"
+        >
+          <div>
+            <div class="flex items-center gap-3">
+              <div
+                class="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-sm font-bold text-blue-600"
+              >
+                PO
+              </div>
+
+              <div>
+                <h2 class="text-lg font-bold text-slate-800">Purchase Order Details</h2>
+
+                <p class="mt-0.5 text-xs text-slate-400">
+                  {{ selectedPurchaseOrder.purchaseOrderNumber }}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            (click)="closeViewModal()"
+            class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-xl text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+          >
+            ×
+          </button>
+        </div>
+
+        <!-- Content -->
+        <div class="overflow-y-auto p-4 sm:p-6">
+          <!-- Details Card -->
+          <div class="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 sm:p-5">
+            <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
+              <div>
+                <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">Supplier</p>
+
+                <p class="mt-1 font-semibold text-slate-800">
+                  {{ selectedPurchaseOrder.supplierName }}
+                </p>
+              </div>
+
+              <div>
+                <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                  Warehouse
+                </p>
+
+                <p class="mt-1 font-semibold text-slate-800">
+                  {{ selectedPurchaseOrder.warehouseName }}
+                </p>
+              </div>
+
+              <div>
+                <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                  Order Date
+                </p>
+
+                <p class="mt-1 font-semibold text-slate-800">
+                  {{ selectedPurchaseOrder.orderDate | date: 'dd MMM yyyy' }}
+                </p>
+              </div>
+
+              <div>
+                <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                  Expected Delivery
+                </p>
+
+                <p class="mt-1 font-semibold text-slate-800">
+                  @if (selectedPurchaseOrder.expectedDeliveryDate) {
+                    {{ selectedPurchaseOrder.expectedDeliveryDate | date: 'dd MMM yyyy' }}
+                  } @else {
+                    Not specified
+                  }
+                </p>
+              </div>
+
+              <div>
+                <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">Status</p>
+
+                <span
+                  [class]="
+                    'mt-1 inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ' +
+                    getStatusClass(selectedPurchaseOrder.status)
+                  "
+                >
+                  <span class="mr-1.5 h-1.5 w-1.5 rounded-full bg-current"></span>
+
+                  {{ selectedPurchaseOrder.status }}
+                </span>
+              </div>
+
+              <div>
+                <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                  Total Amount
+                </p>
+
+                <p class="mt-1 text-xl font-bold text-slate-800">
+                  ₹
+                  {{ selectedPurchaseOrder.totalAmount | number: '1.2-2' }}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Purchase Request -->
+          @if (selectedPurchaseOrder.purchaseRequestNumber) {
+            <div class="mt-5 rounded-2xl border border-blue-100 bg-blue-50 p-4">
+              <p class="text-xs font-semibold uppercase tracking-wide text-blue-500">
+                Purchase Request
+              </p>
+
+              <p class="mt-1 font-semibold text-blue-800">
+                {{ selectedPurchaseOrder.purchaseRequestNumber }}
+              </p>
+            </div>
+          }
+
+          <!-- Remarks -->
+          @if (selectedPurchaseOrder.remarks) {
+            <div class="mt-5">
+              <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
+                Remarks
+              </p>
+
+              <p
+                class="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm leading-6 text-slate-700"
+              >
+                {{ selectedPurchaseOrder.remarks }}
+              </p>
+            </div>
+          }
+
+          <!-- Items -->
+          <div class="mt-7">
+            <div class="mb-4">
+              <h3 class="text-base font-bold text-slate-800">Order Items</h3>
+
+              <p class="mt-1 text-xs text-slate-400">Products included in this purchase order.</p>
+            </div>
+
+            <div class="overflow-hidden rounded-2xl border border-slate-200">
+              <div class="overflow-x-auto">
+                <table class="w-full min-w-[850px] text-left text-sm">
+                  <thead
+                    class="border-b border-slate-200 bg-slate-50 text-xs uppercase tracking-wide text-slate-500"
+                  >
+                    <tr>
+                      <th class="px-4 py-3 font-semibold">Product</th>
+
+                      <th class="px-4 py-3 font-semibold">SKU</th>
+
+                      <th class="px-4 py-3 font-semibold">Ordered</th>
+
+                      <th class="px-4 py-3 font-semibold">Received</th>
+
+                      <th class="px-4 py-3 font-semibold">Remaining</th>
+
+                      <th class="px-4 py-3 font-semibold">Unit Price</th>
+
+                      <th class="px-4 py-3 font-semibold">Total</th>
+                    </tr>
+                  </thead>
+
+                  <tbody class="divide-y divide-slate-100">
+                    @for (item of selectedPurchaseOrder.items; track item.id) {
+                      <tr class="transition hover:bg-slate-50">
+                        <td class="px-4 py-3 font-semibold text-slate-800">
+                          {{ item.productName }}
+                        </td>
+
+                        <td class="px-4 py-3 text-slate-500">
+                          <span class="rounded-md bg-slate-100 px-2 py-1 text-xs">
+                            {{ item.sku }}
+                          </span>
+                        </td>
+
+                        <td class="px-4 py-3 text-slate-600">
+                          {{ item.orderedQuantity }}
+                        </td>
+
+                        <td class="px-4 py-3 text-slate-600">
+                          {{ item.receivedQuantity }}
+                        </td>
+
+                        <td class="px-4 py-3 font-medium text-slate-700">
+                          {{ item.remainingQuantity }}
+                        </td>
+
+                        <td class="px-4 py-3 text-slate-600">
+                          ₹
+                          {{ item.unitPrice | number: '1.2-2' }}
+                        </td>
+
+                        <td class="px-4 py-3 font-bold text-slate-800">
+                          ₹
+                          {{ item.totalPrice | number: '1.2-2' }}
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Footer -->
+          <div class="mt-7 flex justify-stretch border-t border-slate-200 pt-5 sm:justify-end">
+            <button
+              type="button"
+              (click)="closeViewModal()"
+              class="w-full rounded-xl border border-slate-300 px-5 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-50 sm:w-auto"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+</div>
